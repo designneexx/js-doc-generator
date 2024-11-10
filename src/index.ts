@@ -1,10 +1,41 @@
 import axios from 'axios';
 import {
     AIServiceOptions,
+    InitParams,
     JSDocGeneratorService,
     JSDocGeneratorServiceOptions
 } from './types/common';
 import { init } from './utils/init';
+import { loadConfig } from './utils/helpers/loadConfigFile';
+import { Command } from 'commander';
+import packageJSON from '../package.json';
+
+const program = new Command();
+
+program
+    .name('js-doc-generator')
+    .description('CLI для автоматической генерации JSDoc')
+    .version(packageJSON.version);
+
+program
+    .command('generate')
+    .description(
+        'Автоматически добавить комментарии JSDoc к вашему списку файлов. Поддерживается только TypeScript'
+    )
+    .argument('<string>', 'glob ваши файлы для обработки')
+    .action(async (files) => {
+        await start({ files: [files] });
+    });
+
+program.parse();
+
+export async function start<CurrentAIServiceOptions extends AIServiceOptions>(
+    overrideConfig?: Partial<InitParams<CurrentAIServiceOptions>>
+) {
+    const config = await loadConfig<CurrentAIServiceOptions>();
+
+    await init({ ...config, ...overrideConfig });
+}
 
 /**
  * Интерфейс, представляющий ответ с кодом JSDoc.
@@ -20,7 +51,7 @@ export interface GetJSDocCodeReponse {
  * HTTP-клиент для выполнения запросов на сервер
  * @type {import("axios").AxiosInstance}
  */
-const axiosClient = axios.create({
+export const axiosClient = axios.create({
     baseURL: 'http://localhost:3002'
 });
 
@@ -32,7 +63,7 @@ const axiosClient = axios.create({
  * @param {CurrentAIServiceOptions} aiServiceOptions - Опции сервиса AI
  * @returns {Promise<string>} - Обещание сгенерированных JSDoc комментариев
  */
-async function createJSDoc<CurrentAIServiceOptions extends AIServiceOptions>(
+export async function createJSDoc<CurrentAIServiceOptions extends AIServiceOptions>(
     url: string,
     options: JSDocGeneratorServiceOptions,
     aiServiceOptions: CurrentAIServiceOptions
@@ -58,7 +89,7 @@ async function createJSDoc<CurrentAIServiceOptions extends AIServiceOptions>(
 /**
  * Сервис для генерации JSDoc комментариев.
  */
-const jsDocGeneratorService: JSDocGeneratorService = {
+export const jsDocGeneratorService: JSDocGeneratorService = {
     /**
      * Создает JSDoc для интерфейса.
      * @param {Options} options - Опции для генерации JSDoc, которые могут включать в себя информацию о структуре и свойствах интерфейса.
@@ -114,14 +145,3 @@ const jsDocGeneratorService: JSDocGeneratorService = {
         return createJSDoc('/function', options, aiServiceOptions);
     }
 };
-
-init({
-    files: ['src/**/*.{ts,tsx}'],
-    ignoredFiles: ['src/hi.tsx'],
-    jsDocGeneratorService,
-    projectOptions: {
-        tsConfigFilePath: 'tsconfig.json'
-    }
-});
-
-export {init};
