@@ -1,14 +1,14 @@
 import axios from 'axios';
+import { Command } from 'commander';
+import packageJSON from '../package.json';
 import {
     AIServiceOptions,
     InitParams,
     JSDocGeneratorService,
     JSDocGeneratorServiceOptions
 } from './types/common';
-import { init } from './utils/init';
 import { loadConfig } from './utils/helpers/loadConfigFile';
-import { Command } from 'commander';
-import packageJSON from '../package.json';
+import { init } from './utils/init';
 
 const program = new Command();
 
