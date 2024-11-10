@@ -20,12 +20,12 @@ export default [
         output: [
             {
                 dir: 'dist',
-                entryFileNames: '[name].js',
+                entryFileNames: '[name].cjs',
                 format: 'cjs',
             },
             {
                 dir: 'dist',
-                entryFileNames: '[name].es.js',
+                entryFileNames: '[name].mjs',
                 format: 'esm',
             },
         ],

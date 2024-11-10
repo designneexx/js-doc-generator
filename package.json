@@ -12,12 +12,12 @@
   },
   "keywords": [],
   "author": "designneexx <webmasterondesign@gmail.com>",
-  "main": "dist/index.js",
-  "module": "dist/index.es.js",
+  "main": "dist/index.cjs",
+  "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "bin": {
-    "auto-js-doc-generator": "dist/index.js",
-    "auto-js-doc-gen": "dist/index.js"
+    "auto-js-doc-generator": "dist/index.mjs",
+    "auto-js-doc-gen": "dist/index.mjs"
   },
   "license": "ISC",
   "description": "Позволяет автоматически генерировать документацию JSDoc к вашему коду",
