@@ -1,0 +1,15 @@
+import { FileCacheHashMetadata } from 'src/types/common';
+
+/**
+ * Получает список кэша из входного элемента.
+ * @param entry - Входной элемент, содержащий ключ и карту значений кэша.
+ * @returns Объект, содержащий ключ и массив значений кэша.
+ */
+export function getCacheList(entry: [string, Map<string, FileCacheHashMetadata>]) {
+    const [key, map] = entry;
+
+    return {
+        key,
+        value: Array.from(map.values())
+    };
+}

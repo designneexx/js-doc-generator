@@ -1,0 +1,70 @@
+{
+  "name": "auto-js-doc-generator",
+  "version": "1.0.0",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint:check": "eslint src \"src/**/*.{ts,tsx}\"",
+    "lint:write": "eslint src \"src/**/*.{ts,tsx}\" --fix",
+    "build:rollup": "rollup -c",
+    "cz": "git-cz"
+  },
+  "keywords": [],
+  "author": "designneexx <webmasterondesign@gmail.com>",
+  "main": "dist/index.js",
+  "module": "dist/index.es.js",
+  "types": "dist/index.d.ts",
+  "license": "ISC",
+  "description": "Позволяет автоматически генерировать документацию JSDoc к вашему коду",
+  "files": [
+    "README.md",
+    "CHANGELOG.md",
+    "package.json",
+    "dist"
+  ],
+  "commitizen": {
+    "path": "cz-conventional-changelog"
+  },
+  "dependencies": {
+    "axios": "^1.7.7",
+    "chalk": "^5.3.0",
+    "crypto": "^1.0.1",
+    "crypto-js": "^4.2.0",
+    "eslint": "^9.13.0",
+    "file-system-cache": "^2.4.7",
+    "glob": "^11.0.0",
+    "rollup-plugin-delete": "^2.1.0",
+    "terser": "^5.36.0",
+    "ts-morph": "^24.0.0",
+    "typescript": "^5.6.3",
+    "uuid": "^11.0.2",
+    "workerpool": "^9.2.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.1.0",
+    "@eslint/js": "^9.13.0",
+    "@rollup/plugin-commonjs": "^28.0.1",
+    "@rollup/plugin-json": "^6.1.0",
+    "@rollup/plugin-node-resolve": "^15.3.0",
+    "@rollup/plugin-terser": "^0.4.4",
+    "@rollup/plugin-typescript": "^12.1.1",
+    "@types/chalk": "^0.4.31",
+    "@types/crypto-js": "^4.2.2",
+    "@types/eslint": "^9.6.1",
+    "@types/glob": "^8.1.0",
+    "@types/node": "^22.8.6",
+    "@types/uuid": "^10.0.0",
+    "@types/winston": "^2.4.4",
+    "commitizen": "^4.3.1",
+    "cz-conventional-changelog": "^3.3.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-prettier": "^5.2.1",
+    "eslint-plugin-unused-imports": "^4.1.4",
+    "prettier": "^3.3.3",
+    "rollup": "^4.24.3",
+    "rollup-plugin-dts": "^6.1.1",
+    "rollup-plugin-peer-deps-external": "^2.2.4",
+    "typescript-eslint": "^8.12.2"
+  }
+}

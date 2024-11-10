@@ -1,0 +1,27 @@
+{
+    "compilerOptions": {
+        "target": "ESNext",
+        "sourceMap": true,
+        "skipLibCheck": true,
+        "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true,
+        "strict": true,
+        "forceConsistentCasingInFileNames": true,
+        "noFallthroughCasesInSwitch": true,
+        "module": "ESNext",
+        "moduleResolution": "Bundler",
+        "useDefineForClassFields": true,
+        "allowImportingTsExtensions": false,
+        "noEmit":false,
+        "emitDeclarationOnly": false,
+        "baseUrl": ".",
+        "outDir": "./dist",
+        "declaration": true,
+        "declarationDir": "dist",
+        "paths": {
+            "src/*": ["./src/*"]
+        }
+    },
+    "include": ["src/**/*"],
+    "exclude": ["node_modules", "dist"]
+}
