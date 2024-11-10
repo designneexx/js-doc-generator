@@ -8,6 +8,8 @@ import del from 'rollup-plugin-delete';
 import external from 'rollup-plugin-peer-deps-external';
 import commonjs from '@rollup/plugin-commonjs';
 import { globSync } from 'glob';
+import shebang from 'rollup-plugin-preserve-shebang';
+
 
 /**
  * @type {import('rollup').RollupOptions[]}
@@ -28,6 +30,7 @@ export default [
             },
         ],
         plugins: [
+            shebang(),
             del({ targets: 'dist/*' }),
             typescript({tsconfig: './tsconfig.json'}),
             // nodeResolve(),
