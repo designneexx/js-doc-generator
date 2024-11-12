@@ -1,4 +1,5 @@
 import fs from 'fs';
+import fsAsync from 'fs/promises';
 import path from 'path';
 import 'ts-node/register';
 import { pathToFileURL } from 'url';
@@ -43,7 +44,13 @@ export async function loadConfig<CurrentAIServiceOptions extends AIServiceOption
 
     await memoryEmitResult.saveFiles();
 
-    const config = await import(url.href);
+    const dir = path.dirname(findIndexFile.filePath);
+    const oldPath = path.join(dir, path.basename(findIndexFile.filePath));
+    const newPath = path.join(dir, 'jsdocgen.config.mjs');
+
+    await fsAsync.rename(oldPath, newPath);
+
+    const config = await import(pathToFileURL(newPath).href);
 
     return config.default;
 }

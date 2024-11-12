@@ -16,8 +16,7 @@
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "bin": {
-    "auto-js-doc-generator": "dist/index.mjs",
-    "auto-js-doc-gen": "dist/index.mjs"
+    "auto-js-doc-gen": "dist/cli.mjs"
   },
   "license": "ISC",
   "description": "Позволяет автоматически генерировать документацию JSDoc к вашему коду",
