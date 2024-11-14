@@ -6,6 +6,7 @@ import del from 'rollup-plugin-delete';
 import external from 'rollup-plugin-peer-deps-external';
 import commonjs from '@rollup/plugin-commonjs';
 import shebang from 'rollup-plugin-preserve-shebang';
+import resolve from '@rollup/plugin-node-resolve'
 import { globSync } from 'glob';
 
 /**
@@ -17,28 +18,16 @@ export default [
         output: [
             {
                 dir: 'dist',
-                exports: 'named',
-                externalImportAttributes: true,
-                externalLiveBindings: true,
                 extend: true,
-                entryFileNames: '[name].cjs',
-                format: 'cjs',
+                entryFileNames: '[name].js',
+                format: 'commonjs',
                 interop: 'auto',
-            },
-            {
-                dir: 'dist',
-                interop: 'auto',
-                externalImportAttributes: true,
-                externalLiveBindings: true,
-                extend: true,
-                exports: 'named',
-                entryFileNames: '[name].mjs',
-                format: 'esm',
             },
         ],
         plugins: [
             del({ targets: 'dist/*' }),
             typescript({tsconfig: './tsconfig.json'}),
+            resolve(),
             json(),
             commonjs(),
             external(),

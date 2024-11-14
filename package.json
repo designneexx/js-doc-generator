@@ -8,7 +8,8 @@
     "build:rollup": "rollup -c=rollup.config.mjs",
     "commit": "git-cz",
     "changelog": "conventional-changelog -o CHANGELOG.md",
-    "postcommit": "npm run changelog"
+    "postcommit": "npm run changelog",
+    "compile": "webpack"
   },
   "keywords": [],
   "author": "designneexx <webmasterondesign@gmail.com>",
@@ -76,6 +77,9 @@
     "rollup-plugin-dts": "^6.1.1",
     "rollup-plugin-peer-deps-external": "^2.2.4",
     "rollup-plugin-preserve-shebang": "^1.0.1",
-    "typescript-eslint": "^8.12.2"
+    "ts-loader": "^9.5.1",
+    "typescript-eslint": "^8.12.2",
+    "webpack": "^5.96.1",
+    "webpack-cli": "^5.1.4"
   }
 }
