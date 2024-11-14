@@ -51,6 +51,7 @@ export function initJSDocFactory<
                 ? chalk.green('Данный узел уже есть в кэше, пропускаю его')
                 : chalk.italic('Узла еще нет в кэше')
         );
+        
         if (hasCached) {
             return false;
         }
