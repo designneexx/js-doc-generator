@@ -4,7 +4,7 @@ await esbuild.build({
   entryPoints: ['src/index.ts', 'src/cli.ts'],
   bundle: true,
   platform: 'node',
-  outdir: 'distr',
+  outdir: 'dist',
   packages: 'external',
 });
 
@@ -13,6 +13,6 @@ await esbuild.build({
     bundle: true,
     external: ['.'],
     platform: 'node',
-    outdir: 'distr',
+    outdir: 'dist',
     packages: 'external',
 })
