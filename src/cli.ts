@@ -3,7 +3,7 @@ import { Command } from 'commander';
 import packageJSON from '../package.json';
 import { AIServiceOptions, InitParams } from './types/common';
 import { loadConfig } from './utils/helpers/loadConfigFile';
-import { init } from './utils/init';
+import { init } from '.';
 
 const program = new Command();
 

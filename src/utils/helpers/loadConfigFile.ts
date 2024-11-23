@@ -34,7 +34,7 @@ export async function loadConfig<CurrentAIServiceOptions extends AIServiceOption
     const project = new Project({
         tsConfigFilePath: 'tsconfig.json',
         compilerOptions: {
-            outDir: path.resolve(import.meta.dirname, 'compiled')
+            outDir: path.resolve(__dirname, 'compiled')
         },
         skipAddingFilesFromTsConfig: true
     });
