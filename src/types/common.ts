@@ -1,4 +1,5 @@
 import { ESLint } from 'eslint';
+import { FileSystemCacheOptions } from 'file-system-cache/lib/types';
 import { FileCacheManagerMap } from 'src/utils/FileCacheManagerMap';
 import {
     JSDocableNode,
@@ -444,6 +445,14 @@ export type DetailGenerationOptions<
  * Интерфейс для параметров инициализации сервиса.
  */
 export interface InitParams<CurrentAIServiceOptions extends AIServiceOptions = AIServiceOptions> {
+    /**
+     * Опции для генерации кэша
+     */
+    cacheOptions?: FileSystemCacheOptions;
+    /**
+     * Директория с кэшэм
+     */
+    cacheDir?: string;
     /**
      * Опции проекта, которые могут включать в себя настройки, специфичные для текущего проекта.
      *

@@ -12,6 +12,7 @@ import { isNodeInCache } from './helpers/isNodeInCache';
 import { isPromiseResolvedAndTrue } from './helpers/isPromiseResolvedAndTrue';
 import { saveJSDocProcessedInCache } from './helpers/saveJSDocsProcessedInCache';
 import { JSDocInitializer, JSDocInitializerConstructor } from './JSDocInitializer';
+import path from 'path';
 
 /**
  * Инициализирует процесс генерации JSDoc комментариев для заданных исходных файлов проекта.
@@ -35,12 +36,15 @@ export async function init<CurrentAIServiceOptions extends AIServiceOptions>(
         files,
         jsDocGeneratorService,
         globalGenerationOptions,
-        detailGenerationOptions
+        detailGenerationOptions,
+        cacheDir = './.cache',
+        cacheOptions
     } = params;
     const cache = new Cache({
-        basePath: './.cache', // (optional) Path where cache files are stored (default).
+        basePath: cacheDir, // (optional) Path where cache files are stored (default).
         ns: 'my-namespace', // (optional) A grouping namespace for items.
-        hash: 'sha1' // (optional) A hashing algorithm used within the cache key.
+        hash: 'sha1', // (optional) A hashing algorithm used within the cache key.
+        ...cacheOptions
     });
     const logger = winston.createLogger({
         format: winston.format.combine(winston.format.colorize(), winston.format.simple()),
