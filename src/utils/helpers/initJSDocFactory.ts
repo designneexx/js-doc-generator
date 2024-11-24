@@ -11,6 +11,8 @@ import { cloneNodeAsFileFactory } from './cloneNodeAsFileFactory';
 import { getJSDocableNodesFromCodeSnippet } from './getJSDocableNodesFromCodeSnippet';
 import { getMinifySourceCode } from './getMinifySourceCode';
 import { isProjectDependency } from './isProjectDependency';
+import { ESLint } from 'eslint';
+import winston from 'winston';
 
 /**
  * Инициализирует фабрику JSDoc.
@@ -27,6 +29,28 @@ export function initJSDocFactory<
     const project = new Project();
     const cloneNodeAsFile = cloneNodeAsFileFactory(project);
 
+    async function lintText(esLint: ESLint, logger: winston.Logger , jsDocableCodeSnippet: string) {
+        let result: ESLint.LintResult | null = null;
+
+        logger.info(
+            `${chalk.underline('Форматирую фрагмент кода через ')} ${chalk.yellow('ESLint')}`
+        );
+
+        try {
+            const [lintResult] = await esLint.lintText(jsDocableCodeSnippet);
+
+            result = lintResult;
+
+            logger.info(chalk.green('Код успешно форматирован.'));
+
+            return result;
+        } catch(e) {
+            logger.error(chalk.red('Ошибка форматирования:\n'), JSON.stringify(e));
+
+            return null;
+        }
+    }
+
     return async <CurrentAIServiceOptions extends AIServiceOptions>(
         prepareParams: PrepareAndApplyJSDoc<CurrentNode, CurrentAIServiceOptions>
     ): Promise<boolean> => {
@@ -38,7 +62,6 @@ export function initJSDocFactory<
             aiServiceOptions,
             fileCacheManagerMap,
             isNodeInCache,
-
             esLint,
             logger
         } = prepareParams;
@@ -83,7 +106,7 @@ export function initJSDocFactory<
             `${chalk.underline('Форматирую фрагмент кода через ')} ${chalk.yellow('ESLint')}`
         );
 
-        const [lintResult] = await esLint.lintText(jsDocableCodeSnippet);
+        const lintResult = await lintText(esLint, logger, jsDocableCodeSnippet);
 
         logger.info(chalk.green('Код успешно форматирован.'));
 

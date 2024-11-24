@@ -17,7 +17,7 @@
         "baseUrl": ".",
         "outDir": "./dist",
         "declaration": true,
-        "declarationDir": "dist/dts",
+        "declarationDir": "dist/src",
         "rootDir": "src",
         "paths": {
             "src/*": ["./src/*"]
