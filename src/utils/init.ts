@@ -12,7 +12,6 @@ import { isNodeInCache } from './helpers/isNodeInCache';
 import { isPromiseResolvedAndTrue } from './helpers/isPromiseResolvedAndTrue';
 import { saveJSDocProcessedInCache } from './helpers/saveJSDocsProcessedInCache';
 import { JSDocInitializer, JSDocInitializerConstructor } from './JSDocInitializer';
-import path from 'path';
 
 /**
  * Инициализирует процесс генерации JSDoc комментариев для заданных исходных файлов проекта.
@@ -182,7 +181,7 @@ export async function init<CurrentAIServiceOptions extends AIServiceOptions>(
             logger.error(chalk.red('Не удалось форматировать код с помощью ESLint:\n', JSON.stringify(e)));
         }
 
-        if(results.length > 0) {
+        if (results.length > 0) {
             logger.info(chalk.gray('Применяю изменения линтера к файлам'));
 
             await ESLint.outputFixes(results);
@@ -197,7 +196,6 @@ export async function init<CurrentAIServiceOptions extends AIServiceOptions>(
         try {
             await saveJSDocProcessedInCache({
                 cache,
-                fileCacheManagerMap,
                 projectOptions,
                 kinds,
                 files

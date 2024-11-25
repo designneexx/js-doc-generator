@@ -2,6 +2,8 @@ import { Cache } from 'file-system-cache';
 import { FileCacheHashMetadata } from 'src/types/common';
 import { getCacheList } from './helpers/getCacheList';
 
+export const CACHE_KEY = 'CACHE_KEY';
+
 /**
  * Класс для управления кэшем файлов с использованием Map
  */
@@ -18,8 +20,8 @@ export class FileCacheManagerMap extends Map<string, Map<string, FileCacheHashMe
          * @returns Список кэшей
          */
         const entries = Array.from(this.entries());
-        const savings = entries.map(getCacheList);
+        const savings = entries.flatMap(getCacheList);
 
-        return cache.save(savings);
+        return cache.set(CACHE_KEY, savings);
     }
 }

@@ -24,10 +24,6 @@ interface SaveJSDocProcessedInCacheParams {
      */
     kinds: `${KindDeclarationNames}`[];
     /**
-     * Карта менеджеров кэша файлов
-     */
-    fileCacheManagerMap: FileCacheManagerMap;
-    /**
      * Кэш, в который нужно сохранить обработанные JSDoc
      */
     cache: Cache;
@@ -43,9 +39,10 @@ interface SaveJSDocProcessedInCacheParams {
  * @param {Cache} params.cache - Кэш для сохранения.
  */
 export function saveJSDocProcessedInCache(params: SaveJSDocProcessedInCacheParams) {
-    const { projectOptions, files, kinds, fileCacheManagerMap, cache } = params;
+    const { projectOptions, files, kinds, cache } = params;
     const project = new Project(projectOptions);
     const sourceFiles = project.addSourceFilesAtPaths(files);
+    const fileCacheManagerMap = new FileCacheManagerMap();
 
     sourceFiles.forEach((sourceFile) => {
         /**

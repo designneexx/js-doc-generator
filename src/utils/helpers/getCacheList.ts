@@ -6,10 +6,7 @@ import { FileCacheHashMetadata } from 'src/types/common';
  * @returns Объект, содержащий ключ и массив значений кэша.
  */
 export function getCacheList(entry: [string, Map<string, FileCacheHashMetadata>]) {
-    const [key, map] = entry;
+    const [, map] = entry;
 
-    return {
-        key,
-        value: Array.from(map.values())
-    };
+    return Array.from(map.values());
 }

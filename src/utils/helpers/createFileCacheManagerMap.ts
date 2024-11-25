@@ -1,6 +1,7 @@
 import { Cache } from 'file-system-cache';
 import { FileCacheHashMetadata } from 'src/types/common';
 import { FileCacheManagerMap } from '../FileCacheManagerMap';
+import { SourceFile } from 'ts-morph';
 
 /**
  * Создает отображение менеджера кэша файлов на основе переданного кэша.
