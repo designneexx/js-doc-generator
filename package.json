@@ -1,6 +1,6 @@
 {
   "name": "auto-js-doc-generator",
-  "version": "1.0.17",
+  "version": "1.0.18",
   "scripts": {
     "lint:check": "eslint src \"src/**/*.{ts,tsx}\"",
     "lint:write": "eslint src \"src/**/*.{ts,tsx}\" --fix",
