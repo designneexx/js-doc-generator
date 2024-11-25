@@ -7,7 +7,7 @@ await esbuild.build({
   bundle: true,
   platform: 'node',
   outdir: 'dist',
-  // packages: 'external',
+  external: ['esbuild'],
   plugins: [dtsPlugin()]
 });
 

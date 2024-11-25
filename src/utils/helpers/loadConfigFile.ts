@@ -1,6 +1,6 @@
 import fs from 'fs';
+import * as esbuild from 'esbuild';
 import path from 'path';
-import 'ts-node/register';
 import { pathToFileURL } from 'url';
 import { AIServiceOptions, InitParams } from 'src/types/common';
 
@@ -43,9 +43,8 @@ export async function loadConfig<CurrentAIServiceOptions extends AIServiceOption
         tsConfig = path.resolve(cwd, 'tsconfig.json')
     } = params || {};
     const configPath = findConfigFile(cwd);
-    const module = await import('esbuild');
 
-    await module.build({
+    await esbuild.build({
         entryPoints: [configPath],
         bundle: true,
         external: ['auto-js-doc-generator'],
