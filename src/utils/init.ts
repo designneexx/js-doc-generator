@@ -104,15 +104,20 @@ export async function init<CurrentAIServiceOptions extends AIServiceOptions>(
             allowedExtractedDeclarations
         );
         const processedDeclarations = await Promise.allSettled(listOfFlattenedJSDocProcess);
-        const processedDeclarationErrors: PromiseRejectedResult[] = processedDeclarations.filter(item => item.status === 'rejected');
+        const processedDeclarationErrors: PromiseRejectedResult[] = processedDeclarations.filter(
+            (item) => item.status === 'rejected'
+        );
         const isDeclarationSucessProcessed = processedDeclarations.some(
             isPromiseResolvedAndTrue,
             false
         );
 
         if (processedDeclarationErrors.length) {
-            for(const error of processedDeclarationErrors) {
-                logger.error(chalk.red(`Ошибка обработки файла: ${sourceFile.getFilePath()}`), error.reason);
+            for (const error of processedDeclarationErrors) {
+                logger.error(
+                    chalk.red(`Ошибка обработки файла: ${sourceFile.getFilePath()}`),
+                    error.reason
+                );
             }
         }
 
@@ -131,7 +136,7 @@ export async function init<CurrentAIServiceOptions extends AIServiceOptions>(
         } else {
             logger.info(
                 `${chalk.green('Нет изменений для сохранения файла ')} ${chalk.bold(sourceFile.getFilePath())}`
-            ); 
+            );
         }
 
         return isDeclarationSucessProcessed;
@@ -148,7 +153,7 @@ export async function init<CurrentAIServiceOptions extends AIServiceOptions>(
 
         try {
             await project.save();
-        } catch(e) {
+        } catch (e) {
             logger.error(chalk.red('Не удалось сохранить проект:\n', JSON.stringify(e)));
 
             return;
@@ -162,21 +167,23 @@ export async function init<CurrentAIServiceOptions extends AIServiceOptions>(
 
         try {
             results = await esLint.lintFiles(files);
-        } catch(e) {
-            logger.error(chalk.red('Не удалось форматировать код с помощью ESLint:\n', JSON.stringify(e)));
+        } catch (e) {
+            logger.error(
+                chalk.red('Не удалось форматировать код с помощью ESLint:\n', JSON.stringify(e))
+            );
         }
 
         if (results.length > 0) {
             logger.info(chalk.gray('Применяю изменения линтера к файлам'));
 
             await ESLint.outputFixes(results);
-    
+
             logger.info(chalk.green('Линтинг был успешно завершен.'));
         } else {
             logger.info('Нет данных для форматирования кода');
         }
 
-        logger.info('Сохраняю данные в кэш')
+        logger.info('Сохраняю данные в кэш');
 
         try {
             await saveJSDocProcessedInCache({
@@ -186,8 +193,8 @@ export async function init<CurrentAIServiceOptions extends AIServiceOptions>(
                 files
             });
 
-            logger.info(chalk.green('Обработка сохранена в кэше'))
-        } catch(e) {
+            logger.info(chalk.green('Обработка сохранена в кэше'));
+        } catch (e) {
             logger.error(chalk.red('Не удалось сохранить кэш'));
         }
     } else {

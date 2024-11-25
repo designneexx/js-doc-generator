@@ -1,10 +1,10 @@
 import fs from 'fs';
-import fsAsync from 'fs/promises';
 import path from 'path';
 import 'ts-node/register';
 import { pathToFileURL } from 'url';
 import { AIServiceOptions, InitParams } from 'src/types/common';
-import { Project } from 'ts-morph';
+
+const compiledJSDocGenConfigFileName = 'jsdocgen.config.js';
 
 const possibleConfigFiles = [
     'jsdocgen.config.ts',
@@ -15,9 +15,16 @@ const possibleConfigFiles = [
     'jsdocgen.config.cjs'
 ];
 
-function findConfigFile() {
+export interface LoadConfigParams {
+    cwd?: string;
+    currentDir?: string;
+    tsConfig?: string;
+    outDir?: string;
+}
+
+export function findConfigFile(cwd = process.cwd()) {
     for (const configFile of possibleConfigFiles) {
-        const resolvedPath = path.resolve(process.cwd(), configFile);
+        const resolvedPath = path.resolve(cwd, configFile);
         if (fs.existsSync(resolvedPath)) {
             return resolvedPath;
         }
@@ -26,37 +33,28 @@ function findConfigFile() {
     throw new Error('Конфигурационный файл не найден');
 }
 
-export async function loadConfig<CurrentAIServiceOptions extends AIServiceOptions>(): Promise<
-    InitParams<CurrentAIServiceOptions> | null
-> {
-    const configPath = findConfigFile();
+export async function loadConfig<CurrentAIServiceOptions extends AIServiceOptions>(
+    params?: LoadConfigParams
+): Promise<InitParams<CurrentAIServiceOptions> | null> {
+    const {
+        cwd = process.cwd(),
+        currentDir = __dirname,
+        outDir = path.resolve(currentDir, 'compiled'),
+        tsConfig = path.resolve(cwd, 'tsconfig.json')
+    } = params || {};
+    const configPath = findConfigFile(cwd);
+    const module = await import('esbuild');
 
-    const project = new Project({
-        tsConfigFilePath: 'tsconfig.json',
-        compilerOptions: {
-            outDir: path.resolve(__dirname, 'compiled')
-        },
-        skipAddingFilesFromTsConfig: true
+    await module.build({
+        entryPoints: [configPath],
+        bundle: true,
+        external: ['auto-js-doc-generator'],
+        platform: 'node',
+        outfile: path.resolve(outDir, compiledJSDocGenConfigFileName),
+        tsconfig: tsConfig
     });
-    project.addSourceFileAtPath(configPath);
-    const memoryEmitResult = await project.emitToMemory();
-    const memoryEmitResultFiles = memoryEmitResult.getFiles();
-    const findedConfigFile = memoryEmitResultFiles.find((file) =>
-        possibleConfigFiles.includes(path.basename(file.filePath))
-    );
 
-    if (!findedConfigFile) {
-        return null;
-    }
-
-    await memoryEmitResult.saveFiles();
-
-    const dir = path.dirname(findedConfigFile.filePath);
-    const oldPath = path.join(dir, path.basename(findedConfigFile.filePath));
-    const newPath = path.join(dir, 'jsdocgen.config.mjs');
-
-    await fsAsync.rename(oldPath, newPath);
-
+    const newPath = path.resolve(outDir, compiledJSDocGenConfigFileName);
     const config = await import(pathToFileURL(newPath).href);
 
     return config.default;

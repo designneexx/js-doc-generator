@@ -1,5 +1,7 @@
 import chalk from 'chalk';
+import { ESLint } from 'eslint';
 import { Project } from 'ts-morph';
+import winston from 'winston';
 import {
     AIServiceOptions,
     ASTJSDocableNode,
@@ -11,8 +13,6 @@ import { cloneNodeAsFileFactory } from './cloneNodeAsFileFactory';
 import { getJSDocableNodesFromCodeSnippet } from './getJSDocableNodesFromCodeSnippet';
 import { getMinifySourceCode } from './getMinifySourceCode';
 import { isProjectDependency } from './isProjectDependency';
-import { ESLint } from 'eslint';
-import winston from 'winston';
 
 /**
  * Инициализирует фабрику JSDoc.
@@ -29,7 +29,7 @@ export function initJSDocFactory<
     const project = new Project();
     const cloneNodeAsFile = cloneNodeAsFileFactory(project);
 
-    async function lintText(esLint: ESLint, logger: winston.Logger , jsDocableCodeSnippet: string) {
+    async function lintText(esLint: ESLint, logger: winston.Logger, jsDocableCodeSnippet: string) {
         let result: ESLint.LintResult | null = null;
 
         logger.info(
@@ -44,7 +44,7 @@ export function initJSDocFactory<
             logger.info(chalk.green('Код успешно форматирован.'));
 
             return result;
-        } catch(e) {
+        } catch (e) {
             logger.error(chalk.red('Ошибка форматирования:\n'), JSON.stringify(e));
 
             return null;
@@ -74,7 +74,7 @@ export function initJSDocFactory<
                 ? chalk.green('Данный узел уже есть в кэше, пропускаю его')
                 : chalk.italic('Узла еще нет в кэше')
         );
-        
+
         if (hasCached) {
             return false;
         }

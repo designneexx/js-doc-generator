@@ -29,7 +29,7 @@ export async function start<CurrentAIServiceOptions extends AIServiceOptions>(
 ) {
     const config = await loadConfig<CurrentAIServiceOptions>();
 
-    if(!config) return;
+    if (!config) return;
 
     await init({ ...config, ...overrideConfig });
 }
