@@ -102,8 +102,6 @@ export async function applyJSDoc<CurrentNode extends ASTJSDocableNode = ASTJSDoc
 
         if (!jsDocableNode) return;
 
-        if (jsDocableNode.getText() !== deepNode.getText()) return;
-
         const jsDocsNode = jsDocableNode?.getJsDocs() || [];
         const jsDocStructure = jsDocsNode.map(getJSDocStructure);
         const filteredJSDocStructure = jsDocStructure.reduce(formatJSDocStructure, []);

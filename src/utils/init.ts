@@ -104,20 +104,16 @@ export async function init<CurrentAIServiceOptions extends AIServiceOptions>(
             allowedExtractedDeclarations
         );
         const processedDeclarations = await Promise.allSettled(listOfFlattenedJSDocProcess);
-        const processedDeclarationErrors = processedDeclarations.reduce(
-            (prev, item) =>
-                item.status === 'rejected'
-                    ? `${prev}/n${chalk.red(`Ошибка обработки узла файла ${sourceFile.getFilePath()}:`)}\n${JSON.stringify(item.reason)}\n`
-                    : prev,
-            ''
-        );
+        const processedDeclarationErrors: PromiseRejectedResult[] = processedDeclarations.filter(item => item.status === 'rejected');
         const isDeclarationSucessProcessed = processedDeclarations.some(
             isPromiseResolvedAndTrue,
             false
         );
 
-        if (processedDeclarationErrors) {
-            logger.error(processedDeclarationErrors);
+        if (processedDeclarationErrors.length) {
+            for(const error of processedDeclarationErrors) {
+                logger.error(chalk.red(`Ошибка обработки файла: ${sourceFile.getFilePath()}`), error.reason);
+            }
         }
 
         if (processedDeclarationErrors.length === processedDeclarations.length) {
@@ -128,35 +124,24 @@ export async function init<CurrentAIServiceOptions extends AIServiceOptions>(
 
         if (isDeclarationSucessProcessed) {
             await sourceFile.save();
-        }
 
-        logger.info(
-            `${chalk.green('Успешная обработка файла ')} ${chalk.bold(sourceFile.getFilePath())}`
-        );
+            logger.info(
+                `${chalk.green('Успешная обработка файла ')} ${chalk.bold(sourceFile.getFilePath())}`
+            );
+        } else {
+            logger.info(
+                `${chalk.green('Нет изменений для сохранения файла ')} ${chalk.bold(sourceFile.getFilePath())}`
+            ); 
+        }
 
         return isDeclarationSucessProcessed;
     });
     const sourceFilesJSDocProcessed = await Promise.allSettled(sourceFilesJSDocProcess);
-    const rejectedSourceFilesJSDocProcessed = sourceFilesJSDocProcessed.reduce(
-        (prev, item) =>
-            item.status === 'rejected'
-                ? `${prev}\n${chalk.red(`Ошибка обработки файла: `)}\n${JSON.stringify(item.reason)}\n`
-                : prev,
-        ''
-    );
 
     const isSourceFileSuccessProcessed = sourceFilesJSDocProcessed.some(
         isPromiseResolvedAndTrue,
         false
     );
-
-    if(rejectedSourceFilesJSDocProcessed) {
-        logger.error(rejectedSourceFilesJSDocProcessed);
-    }
-
-    if (rejectedSourceFilesJSDocProcessed.length === 0) {
-        logger.info(chalk.green('Все файлы были успешно обработаны'));
-    }
 
     if (isSourceFileSuccessProcessed) {
         logger.info(chalk.gray('Сохраняю все изменения в проекте...'));
@@ -205,5 +190,7 @@ export async function init<CurrentAIServiceOptions extends AIServiceOptions>(
         } catch(e) {
             logger.error(chalk.red('Не удалось сохранить кэш'));
         }
+    } else {
+        logger.info(chalk.green('Нет изменений для сохранения'));
     }
 }
