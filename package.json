@@ -2,14 +2,12 @@
   "name": "auto-js-doc-generator",
   "version": "1.0.17",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "lint:check": "eslint src \"src/**/*.{ts,tsx}\"",
     "lint:write": "eslint src \"src/**/*.{ts,tsx}\" --fix",
-    "build:rollup": "rollup -c=rollup.config.mjs",
     "commit": "git-cz",
     "changelog": "conventional-changelog -o CHANGELOG.md",
     "postcommit": "npm run changelog",
-    "compile": "webpack"
+    "build": "node esbuild.config.mjs"
   },
   "keywords": [],
   "author": "designneexx <webmasterondesign@gmail.com>",
