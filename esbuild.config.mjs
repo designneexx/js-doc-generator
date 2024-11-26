@@ -3,7 +3,7 @@ import { dtsPlugin } from "esbuild-plugin-d.ts";
 
 await Promise.all([
   esbuild.build({
-    entryPoints: ['src/index.ts', 'src/cli.ts'],
+    entryPoints: ['src/index.ts'],
     bundle: true,
     platform: 'node',
     outdir: 'dist',
@@ -12,7 +12,7 @@ await Promise.all([
   esbuild.build({
     entryPoints: ['src/cli.ts'],
     bundle: true,
-    external: ['.'],
+    external: ['.', 'esbuild'],
     platform: 'node',
     outdir: 'dist',
   })
