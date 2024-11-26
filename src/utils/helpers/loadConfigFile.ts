@@ -34,7 +34,7 @@ export function findConfigFile(cwd = process.cwd()) {
 
 export async function loadConfig<CurrentAIServiceOptions extends AIServiceOptions>(
     params?: LoadConfigParams
-): Promise<InitParams<CurrentAIServiceOptions> | null> {
+): Promise<Partial<InitParams<CurrentAIServiceOptions>>> {
     const {
         cwd = process.cwd(),
         currentDir = __dirname,
@@ -54,10 +54,7 @@ export async function loadConfig<CurrentAIServiceOptions extends AIServiceOption
     });
 
     const newPath = path.resolve(outDir, compiledJSDocGenConfigFileName);
-    const isExists = fs.existsSync(newPath);
-    const isExistsHref = fs.existsSync(pathToFileURL(newPath).href);
-    console.log({isExists, isExistsHref});
-    const config = await import(pathToFileURL(newPath).href);
+    const config: {default: Partial<InitParams<CurrentAIServiceOptions>>} = await import(pathToFileURL(newPath).href);
 
     return config.default;
 }

@@ -31,5 +31,5 @@ export async function start<CurrentAIServiceOptions extends AIServiceOptions>(
 
     if (!config) return;
 
-    await init({ ...config, ...overrideConfig });
+    await init({ ...config, ...overrideConfig } as InitParams<CurrentAIServiceOptions>);
 }
