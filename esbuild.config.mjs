@@ -6,6 +6,7 @@ await Promise.all([
     entryPoints: ['src/index.ts'],
     bundle: true,
     platform: 'node',
+    external: ['esbuild'],
     outdir: 'dist',
     plugins: [dtsPlugin()]
   }),
