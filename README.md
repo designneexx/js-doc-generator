@@ -5,7 +5,6 @@
 ```typescript
 import { AIServiceOptions, InitParams, JSDocGeneratorService, JSDocGeneratorServiceOptions } from "auto-js-doc-generator/dist/src/types/common";
 import axios from "axios";
-import {init,loadConfig} from 'auto-js-doc-generator';
 
 /**
  * Интерфейс, представляющий ответ с кодом JSDoc.
