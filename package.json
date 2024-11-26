@@ -24,6 +24,7 @@
     "package.json",
     "dist"
   ],
+  "repository": "github:designneexx/js-doc-generator",
   "config": {
     "commitizen": {
       "path": "./node_modules/cz-conventional-changelog"
