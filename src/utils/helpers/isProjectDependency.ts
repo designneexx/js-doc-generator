@@ -5,6 +5,6 @@ import { SourceFile } from 'ts-morph';
  * @param {SourceFile} sourceFile - Исходный файл для проверки
  * @returns {boolean} - Результат проверки: true, если файл не является из внешней библиотеки, иначе false
  */
-export function isProjectDependency(sourceFile: SourceFile) {
+export function isProjectDependency(sourceFile: SourceFile): boolean {
     return !sourceFile.isFromExternalLibrary();
 }

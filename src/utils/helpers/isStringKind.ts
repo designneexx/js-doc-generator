@@ -1,5 +1,5 @@
+import { type KindVariants } from 'src/types/common';
 import { SyntaxKind } from 'ts-morph';
-import { KindVariants } from '../../types/common';
 
 /**
  * Проверяет, является ли переданный аргумент строковым представлением значения перечисления KindVariants

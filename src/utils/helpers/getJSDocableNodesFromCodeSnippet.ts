@@ -1,4 +1,4 @@
-import { ASTJSDocableNode } from 'src/types/common';
+import { type ASTJSDocableNode } from 'src/types/common';
 import { Project } from 'ts-morph';
 import { v4 } from 'uuid';
 import { getAllJSDocableNodesFlatFactory } from './getAllJSDocableNodesFlatFactory';

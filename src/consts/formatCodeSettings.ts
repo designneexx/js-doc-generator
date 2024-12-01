@@ -1,9 +1,9 @@
-import { ts } from 'ts-morph';
+import { FormatCodeSettings, ts } from 'ts-morph';
 
 /**
  * Настройки форматирования кода.
  */
-export const formatCodeSettings = {
+export const formatCodeSettings: FormatCodeSettings = {
     ensureNewLineAtEndOfFile: false,
     baseIndentSize: 0,
     indentSize: 0,

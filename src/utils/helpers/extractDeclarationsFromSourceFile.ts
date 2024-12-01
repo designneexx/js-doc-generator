@@ -1,4 +1,4 @@
-import { ExtractedDeclarations, KindDeclarationNames } from 'src/types/common';
+import { type ExtractedDeclarations, KindDeclarationNames } from 'src/types/common';
 import { SourceFile } from 'ts-morph';
 
 /**

@@ -1,3 +1,5 @@
+import { type CreateJSDoc } from 'src/types/common';
+import { EnumDeclaration } from 'ts-morph';
 import { initJSDocFactory } from '../helpers/initJSDocFactory';
 
 /**
@@ -8,7 +10,7 @@ import { initJSDocFactory } from '../helpers/initJSDocFactory';
  * @param {Object} params.aiServiceOptions - Опции для сервиса искусственного интеллекта.
  * @returns {string} - Сгенерированный JSDoc для перечисления.
  */
-export const createJSDocEnum = initJSDocFactory({
+export const createJSDocEnum: CreateJSDoc<EnumDeclaration> = initJSDocFactory({
     kind: 'EnumDeclaration',
     async getJSDocableCodeSnippet(params) {
         /**

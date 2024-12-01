@@ -1,4 +1,3 @@
-import { ESLint } from 'eslint';
 import {
     ClassDeclaration,
     EnumDeclaration,
@@ -11,7 +10,7 @@ import {
     VariableStatement
 } from 'ts-morph';
 import winston from 'winston';
-import {
+import type {
     AIServiceOptions,
     ASTJSDocableNode,
     DetailGenerationOptions,
@@ -35,11 +34,6 @@ import { createJSDocVariableStatement } from './nodes/createJSDocVariableStateme
 export interface JSDocInitializerConstructor<
     CurrentAIServiceOptions extends AIServiceOptions = AIServiceOptions
 > {
-    /**
-     * Ссылка на экземпляр ESLint, который используется для анализа и проверки
-     * кода на соответствие стандартам качества и стиля.
-     */
-    esLint: ESLint;
     /**
      * Ссылка на проект, представляющий собой контекст, в котором происходит
      * генерация JSDoc. Может включать информацию о структуре и конфигурации проекта.
@@ -132,7 +126,6 @@ function getPrepareParams<
         jsDocGeneratorService,
         fileCacheManagerMap,
         isNodeInCache,
-        esLint,
         logger
     } = config;
     const { aiServiceOptions: globalAiServiceOptions, jsDocOptions: globalJSDocOptions } =
@@ -157,7 +150,6 @@ function getPrepareParams<
         node,
         fileCacheManagerMap,
         isNodeInCache,
-        esLint,
         logger
     };
 }
@@ -184,7 +176,7 @@ export class JSDocInitializer<CurrentAIServiceOptions extends AIServiceOptions =
      * @param {InterfaceDeclaration} node - узел AST интерфейса
      * @returns {string} - сгенерированный JSDoc комментарий
      */
-    createJSDocInterface = (node: InterfaceDeclaration) => {
+    createJSDocInterface = (node: InterfaceDeclaration): Promise<boolean> => {
         return createJSDocInterface(
             getPrepareParams({
                 config: this.config,
@@ -201,7 +193,7 @@ export class JSDocInitializer<CurrentAIServiceOptions extends AIServiceOptions =
      * @param {FunctionDeclaration} node - узел AST функции
      * @returns {string} - сгенерированный JSDoc комментарий
      */
-    createJSDocFunction = (node: FunctionDeclaration) => {
+    createJSDocFunction = (node: FunctionDeclaration): Promise<boolean> => {
         return createJSDocFunction(
             getPrepareParams({
                 config: this.config,
@@ -218,7 +210,7 @@ export class JSDocInitializer<CurrentAIServiceOptions extends AIServiceOptions =
      * @param {EnumDeclaration} node - узел AST перечисления
      * @returns {string} - сгенерированный JSDoc комментарий
      */
-    createJSDocEnum = (node: EnumDeclaration) => {
+    createJSDocEnum = (node: EnumDeclaration): Promise<boolean> => {
         return createJSDocEnum(
             getPrepareParams({
                 config: this.config,
@@ -235,7 +227,7 @@ export class JSDocInitializer<CurrentAIServiceOptions extends AIServiceOptions =
      * @param {TypeAliasDeclaration} node - узел AST псевдонима типа
      * @returns {string} - сгенерированный JSDoc комментарий
      */
-    createJSDocTypeAlias = (node: TypeAliasDeclaration) => {
+    createJSDocTypeAlias = (node: TypeAliasDeclaration): Promise<boolean> => {
         return createJSDocTypeAlias(
             getPrepareParams({
                 config: this.config,
@@ -252,7 +244,7 @@ export class JSDocInitializer<CurrentAIServiceOptions extends AIServiceOptions =
      * @param {VariableStatement} node - узел AST оператора объявления переменных
      * @returns {string} - сгенерированный JSDoc комментарий
      */
-    createJSDocVariableStatement = (node: VariableStatement) => {
+    createJSDocVariableStatement = (node: VariableStatement): Promise<boolean> => {
         return createJSDocVariableStatement(
             getPrepareParams({
                 config: this.config,
@@ -269,7 +261,7 @@ export class JSDocInitializer<CurrentAIServiceOptions extends AIServiceOptions =
      * @param {ClassDeclaration} node - узел AST класса
      * @returns {string} - сгенерированный JSDoc комментарий
      */
-    createJSDocClass = (node: ClassDeclaration) => {
+    createJSDocClass = (node: ClassDeclaration): Promise<boolean> => {
         return createJSDocClass(
             getPrepareParams({
                 config: this.config,

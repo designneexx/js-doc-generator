@@ -1,6 +1,6 @@
 import { Cache } from 'file-system-cache';
 import { KindDeclarationNames } from 'src/types/common';
-import { Project, ProjectOptions } from 'ts-morph';
+import { Project, type ProjectOptions } from 'ts-morph';
 import { FileCacheManagerMap } from '../FileCacheManagerMap';
 import { extractDeclarationsFromSourceFile } from './extractDeclarationsFromSourceFile';
 import { filterExtractedDeclarationsByKinds } from './filterExtractedDeclarationsByKinds';
@@ -38,7 +38,9 @@ interface SaveJSDocProcessedInCacheParams {
  * @param {Map<string, FileCacheManager>} params.fileCacheManagerMap - Карта менеджеров кэша файлов.
  * @param {Cache} params.cache - Кэш для сохранения.
  */
-export function saveJSDocProcessedInCache(params: SaveJSDocProcessedInCacheParams) {
+export function saveJSDocProcessedInCache(
+    params: SaveJSDocProcessedInCacheParams
+): Promise<{ path: string }> {
     const { projectOptions, files, kinds, cache } = params;
     const project = new Project(projectOptions);
     const sourceFiles = project.addSourceFilesAtPaths(files);

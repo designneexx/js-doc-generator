@@ -1,3 +1,4 @@
+import { type CreateJSDoc } from 'src/types/common';
 import { FunctionDeclaration } from 'ts-morph';
 import { initJSDocFactory } from '../helpers/initJSDocFactory';
 
@@ -9,14 +10,16 @@ import { initJSDocFactory } from '../helpers/initJSDocFactory';
  * @param {AIServiceOptions} params.aiServiceOptions - Опции для AI-сервиса.
  * @returns {string} - Сгенерированный JSDoc для FunctionDeclaration.
  */
-export const createJSDocFunction = initJSDocFactory<FunctionDeclaration>({
-    kind: 'FunctionDeclaration',
-    async getJSDocableCodeSnippet(params) {
-        const { jsDocGeneratorService, jsDocGeneratorServiceOptions, aiServiceOptions } = params;
+export const createJSDocFunction: CreateJSDoc<FunctionDeclaration> =
+    initJSDocFactory<FunctionDeclaration>({
+        kind: 'FunctionDeclaration',
+        async getJSDocableCodeSnippet(params) {
+            const { jsDocGeneratorService, jsDocGeneratorServiceOptions, aiServiceOptions } =
+                params;
 
-        return jsDocGeneratorService.createJSDocFunction(
-            jsDocGeneratorServiceOptions,
-            aiServiceOptions
-        );
-    }
-});
+            return jsDocGeneratorService.createJSDocFunction(
+                jsDocGeneratorServiceOptions,
+                aiServiceOptions
+            );
+        }
+    });

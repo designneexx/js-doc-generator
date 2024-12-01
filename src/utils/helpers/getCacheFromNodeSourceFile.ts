@@ -1,5 +1,5 @@
 import sha1 from 'crypto-js/sha1.js';
-import { ASTJSDocableNode, FileCacheHashMetadata } from 'src/types/common';
+import type { ASTJSDocableNode, FileCacheHashMetadata } from 'src/types/common';
 import { SourceFile } from 'ts-morph';
 import { FileCacheManagerMap } from '../FileCacheManagerMap';
 

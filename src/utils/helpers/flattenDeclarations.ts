@@ -1,4 +1,4 @@
-import { ExtractedDeclarations, TupleToUnionArray } from 'src/types/common';
+import type { ExtractedDeclarations, TupleToUnionArray } from 'src/types/common';
 
 /**
  * Функция для выравнивания объявлений.

@@ -1,5 +1,5 @@
+import { type ASTJSDocableNode } from 'src/types/common';
 import { Node, SyntaxKind, ts } from 'ts-morph';
-import { ASTJSDocableNode } from '../../types/common';
 
 /**
  * Функция для создания фабрики, возвращающей функцию, получающую все JSDocable узлы из узла AST.
@@ -9,7 +9,7 @@ import { ASTJSDocableNode } from '../../types/common';
  */
 export function getAllJSDocableNodesFlatFactory(
     depthNodeWeakMap?: WeakMap<ASTJSDocableNode, number>
-) {
+): <CurrentNode extends Node<ts.Node>>(node: CurrentNode) => ASTJSDocableNode[] {
     return <CurrentNode extends Node<ts.Node>>(node: CurrentNode): ASTJSDocableNode[] => {
         /**
          * Получение всех дочерних узлов текущего узла AST.

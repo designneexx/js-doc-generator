@@ -1,9 +1,8 @@
 import chalk from 'chalk';
-import { ESLint } from 'eslint';
 import { Cache } from 'file-system-cache';
 import { Project } from 'ts-morph';
 import winston from 'winston';
-import { AIServiceOptions, InitParams, KindDeclarationNames } from '../types/common';
+import { type AIServiceOptions, type InitParams, KindDeclarationNames } from '../types/common';
 import { createFileCacheManagerMap } from './helpers/createFileCacheManagerMap';
 import { extractDeclarationsFromSourceFile } from './helpers/extractDeclarationsFromSourceFile';
 import { filterExtractedDeclarationsByKinds } from './helpers/filterExtractedDeclarationsByKinds';
@@ -11,7 +10,7 @@ import { flattenAndProcessDeclarations } from './helpers/flattentAndProcessDecla
 import { isNodeInCache } from './helpers/isNodeInCache';
 import { isPromiseResolvedAndTrue } from './helpers/isPromiseResolvedAndTrue';
 import { saveJSDocProcessedInCache } from './helpers/saveJSDocsProcessedInCache';
-import { JSDocInitializer, JSDocInitializerConstructor } from './JSDocInitializer';
+import { JSDocInitializer, type JSDocInitializerConstructor } from './JSDocInitializer';
 
 /**
  * Инициализирует процесс генерации JSDoc комментариев для заданных исходных файлов проекта.
@@ -28,10 +27,9 @@ import { JSDocInitializer, JSDocInitializerConstructor } from './JSDocInitialize
  */
 export async function init<CurrentAIServiceOptions extends AIServiceOptions>(
     params: InitParams<CurrentAIServiceOptions>
-) {
+): Promise<void> {
     const {
         projectOptions,
-        esLintOptions,
         files,
         jsDocGeneratorService,
         globalGenerationOptions,
@@ -41,7 +39,7 @@ export async function init<CurrentAIServiceOptions extends AIServiceOptions>(
     } = params;
     const cache = new Cache({
         basePath: cacheDir, // (optional) Path where cache files are stored (default).
-        ns: 'my-namespace', // (optional) A grouping namespace for items.
+        ns: 'jsdocgen', // (optional) A grouping namespace for items.
         hash: 'sha1', // (optional) A hashing algorithm used within the cache key.
         ...cacheOptions
     });
@@ -53,7 +51,7 @@ export async function init<CurrentAIServiceOptions extends AIServiceOptions>(
     logger.info(`Запуск кодогенерации ${chalk.yellow('designexx JSDocGenerator')}`);
 
     const project = new Project({ ...projectOptions });
-    const esLint = new ESLint({ ...esLintOptions, fix: true, overrideConfig: { files } });
+    // const esLint = new ESLint({ ...esLintOptions, fix: true, overrideConfig: { files } });
 
     logger.info(chalk.yellow('Пытаюсь получить информацию из кэша...'));
 
@@ -67,7 +65,6 @@ export async function init<CurrentAIServiceOptions extends AIServiceOptions>(
 
     const config: JSDocInitializerConstructor<CurrentAIServiceOptions> = {
         project,
-        esLint,
         jsDocGeneratorService,
         globalGenerationOptions,
         detailGenerationOptions,
@@ -163,25 +160,25 @@ export async function init<CurrentAIServiceOptions extends AIServiceOptions>(
 
         logger.info(chalk.gray('Отдаю код в ESLint для восстановления форматирования...'));
 
-        let results: ESLint.LintResult[] = [];
+        // let results: ESLint.LintResult[] = [];
 
-        try {
-            results = await esLint.lintFiles(files);
-        } catch (e) {
-            logger.error(
-                chalk.red('Не удалось форматировать код с помощью ESLint:\n', JSON.stringify(e))
-            );
-        }
+        // try {
+        //     results = await esLint.lintFiles(files);
+        // } catch (e) {
+        //     logger.error(
+        //         chalk.red('Не удалось форматировать код с помощью ESLint:\n', JSON.stringify(e))
+        //     );
+        // }
 
-        if (results.length > 0) {
-            logger.info(chalk.gray('Применяю изменения линтера к файлам'));
+        // if (results.length > 0) {
+        //     logger.info(chalk.gray('Применяю изменения линтера к файлам'));
 
-            await ESLint.outputFixes(results);
+        //     await ESLint.outputFixes(results);
 
-            logger.info(chalk.green('Линтинг был успешно завершен.'));
-        } else {
-            logger.info('Нет данных для форматирования кода');
-        }
+        //     logger.info(chalk.green('Линтинг был успешно завершен.'));
+        // } else {
+        //     logger.info('Нет данных для форматирования кода');
+        // }
 
         logger.info('Сохраняю данные в кэш');
 
@@ -195,7 +192,7 @@ export async function init<CurrentAIServiceOptions extends AIServiceOptions>(
 
             logger.info(chalk.green('Обработка сохранена в кэше'));
         } catch (e) {
-            logger.error(chalk.red('Не удалось сохранить кэш'));
+            logger.error(chalk.red('Не удалось сохранить кэш'), e);
         }
     } else {
         logger.info(chalk.green('Нет изменений для сохранения'));

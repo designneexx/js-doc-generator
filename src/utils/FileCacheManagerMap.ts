@@ -1,5 +1,5 @@
 import { Cache } from 'file-system-cache';
-import { FileCacheHashMetadata } from 'src/types/common';
+import { type FileCacheHashMetadata } from 'src/types/common';
 import { getCacheList } from './helpers/getCacheList';
 
 export const CACHE_KEY = 'CACHE_KEY';
@@ -13,7 +13,7 @@ export class FileCacheManagerMap extends Map<string, Map<string, FileCacheHashMe
      * @param cache - объект кэша для сохранения
      * @returns Результат сохранения кэша
      */
-    save(cache: Cache) {
+    save(cache: Cache): Promise<{ path: string }> {
         /**
          * Получает список кэшей из текущего хранилища
          * @param entry - элемент хранилища

@@ -1,5 +1,5 @@
+import { type KindVariants } from 'src/types/common';
 import { SyntaxKind } from 'ts-morph';
-import { KindVariants } from '../../types/common';
 import { isMemberKind } from './isMemberKind';
 import { isStringKind } from './isStringKind';
 

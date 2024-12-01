@@ -1,13 +1,11 @@
 import chalk from 'chalk';
-import { ESLint } from 'eslint';
-import { Project } from 'ts-morph';
-import winston from 'winston';
-import {
+import type {
     AIServiceOptions,
     ASTJSDocableNode,
     InitJSDocFactoryParams,
     PrepareAndApplyJSDoc
-} from '../../types/common';
+} from 'src/types/common';
+import { Project } from 'ts-morph';
 import { applyJSDoc as applyJSDocDefault } from './applyJSDoc';
 import { cloneNodeAsFileFactory } from './cloneNodeAsFileFactory';
 import { getJSDocableNodesFromCodeSnippet } from './getJSDocableNodesFromCodeSnippet';
@@ -24,32 +22,14 @@ import { isProjectDependency } from './isProjectDependency';
 export function initJSDocFactory<
     CurrentNode extends ASTJSDocableNode = ASTJSDocableNode,
     Response = unknown
->(factoryParams: InitJSDocFactoryParams<CurrentNode, Response>) {
+>(
+    factoryParams: InitJSDocFactoryParams<CurrentNode, Response>
+): <CurrentAIServiceOptions extends AIServiceOptions>(
+    prepareParams: PrepareAndApplyJSDoc<CurrentNode, CurrentAIServiceOptions>
+) => Promise<boolean> {
     const { applyJSDoc = applyJSDocDefault, getJSDocableCodeSnippet } = factoryParams;
     const project = new Project();
     const cloneNodeAsFile = cloneNodeAsFileFactory(project);
-
-    async function lintText(esLint: ESLint, logger: winston.Logger, jsDocableCodeSnippet: string) {
-        let result: ESLint.LintResult | null = null;
-
-        logger.info(
-            `${chalk.underline('Форматирую фрагмент кода через ')} ${chalk.yellow('ESLint')}`
-        );
-
-        try {
-            const [lintResult] = await esLint.lintText(jsDocableCodeSnippet);
-
-            result = lintResult;
-
-            logger.info(chalk.green('Код успешно форматирован.'));
-
-            return result;
-        } catch (e) {
-            logger.error(chalk.red('Ошибка форматирования:\n'), JSON.stringify(e));
-
-            return null;
-        }
-    }
 
     return async <CurrentAIServiceOptions extends AIServiceOptions>(
         prepareParams: PrepareAndApplyJSDoc<CurrentNode, CurrentAIServiceOptions>
@@ -62,7 +42,6 @@ export function initJSDocFactory<
             aiServiceOptions,
             fileCacheManagerMap,
             isNodeInCache,
-            esLint,
             logger
         } = prepareParams;
         logger.info(`Обрабатываю узел: ${chalk.bgBlue(node.getKindName())}`);
@@ -106,11 +85,9 @@ export function initJSDocFactory<
             `${chalk.underline('Форматирую фрагмент кода через ')} ${chalk.yellow('ESLint')}`
         );
 
-        const lintResult = await lintText(esLint, logger, jsDocableCodeSnippet);
-
         logger.info(chalk.green('Код успешно форматирован.'));
 
-        const jsDocs = getJSDocableNodesFromCodeSnippet(lintResult?.output || jsDocableCodeSnippet);
+        const jsDocs = getJSDocableNodesFromCodeSnippet(jsDocableCodeSnippet);
 
         /**
          * Применяет JSDoc к узлу AST.

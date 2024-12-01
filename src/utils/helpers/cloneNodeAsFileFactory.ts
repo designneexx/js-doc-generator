@@ -8,7 +8,9 @@ import { v4 } from 'uuid';
  * @param {Project} [project] - Проект, в котором будет сохранен клонированный файл.
  * @returns {Function} - Функция, принимающая узел и возвращающая клонированный файл.
  */
-export function cloneNodeAsFileFactory(project?: Project) {
+export function cloneNodeAsFileFactory(
+    project?: Project
+): <Value extends SourceFile | Node<ts.Node>>(value: Value) => SourceFile {
     const currentProject = project || new Project();
 
     return <Value extends SourceFile | Node<ts.Node>>(value: Value): SourceFile => {

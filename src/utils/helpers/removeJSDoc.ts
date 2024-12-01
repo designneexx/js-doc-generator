@@ -5,6 +5,6 @@ import { JSDoc } from 'ts-morph';
  * @param {JSDoc} node - Узел JSDoc комментария для удаления.
  * @returns {void}
  */
-export function removeJSDoc(node: JSDoc) {
+export function removeJSDoc(node: JSDoc): void {
     return node.remove();
 }

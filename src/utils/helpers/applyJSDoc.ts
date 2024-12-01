@@ -1,5 +1,9 @@
-import { JSDocStructure, JSDocTagStructure, OptionalKind } from 'ts-morph';
-import { ApplyJSDocParams, ASTJSDocableNode, InsertModeJSDocTypes } from '../../types/common';
+import type { JSDocStructure, JSDocTagStructure, OptionalKind } from 'ts-morph';
+import {
+    type ApplyJSDocParams,
+    type ASTJSDocableNode,
+    InsertModeJSDocTypes
+} from 'src/types/common';
 import { getAllJSDocableNodesFlatFactory } from './getAllJSDocableNodesFlatFactory';
 import { getJSDocStructure } from './getJSDocStructure';
 import { removeJSDoc } from './removeJSDoc';
@@ -11,7 +15,7 @@ import { removeJSDoc } from './removeJSDoc';
  */
 export async function applyJSDoc<CurrentNode extends ASTJSDocableNode = ASTJSDocableNode>(
     params: ApplyJSDocParams<CurrentNode>
-) {
+): Promise<void> {
     const { node, jsDocs, jsDocOptions } = params;
     const {
         isShowJSDocDescription = true,

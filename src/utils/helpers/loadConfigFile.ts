@@ -1,9 +1,9 @@
-import fs from 'fs';
+import { existsSync } from 'fs';
+import { unlink, stat } from 'fs/promises';
 import path from 'path';
 import { pathToFileURL } from 'url';
-import { AIServiceOptions, InitParams } from 'src/types/common';
-
-const compiledJSDocGenConfigFileName = 'jsdocgen.config.js';
+import type { AIServiceOptions, InitParams } from 'src/types/common';
+import { v5 } from 'uuid';
 
 const possibleConfigFiles = [
     'jsdocgen.config.ts',
@@ -21,10 +21,10 @@ export interface LoadConfigParams {
     outDir?: string;
 }
 
-export function findConfigFile(cwd = process.cwd()) {
+export function findConfigFile(cwd: string = process.cwd()): string {
     for (const configFile of possibleConfigFiles) {
         const resolvedPath = path.resolve(cwd, configFile);
-        if (fs.existsSync(resolvedPath)) {
+        if (existsSync(resolvedPath)) {
             return resolvedPath;
         }
     }
@@ -38,23 +38,33 @@ export async function loadConfig<CurrentAIServiceOptions extends AIServiceOption
     const {
         cwd = process.cwd(),
         currentDir = __dirname,
-        outDir = path.resolve(currentDir, 'compiled'),
         tsConfig = path.resolve(cwd, 'tsconfig.json')
     } = params || {};
     const configPath = findConfigFile(cwd);
-    const esbuild =  await import('esbuild');
+    const fileStat = await stat(configPath);
+    const mtime = fileStat.mtime.getTime();
+    const uuid = v5(mtime.toString(), v5.URL);
+
+    const esbuild = await import('esbuild');
+    const outfile = path.resolve(currentDir, uuid);
+    const fileURL = pathToFileURL(outfile);
+
+    fileURL.searchParams.append('mtime', mtime.toString());
 
     await esbuild.build({
         entryPoints: [configPath],
         bundle: true,
+        packages: 'external',
         external: ['auto-js-doc-generator', 'esbuild'],
         platform: 'node',
-        outfile: path.resolve(outDir, compiledJSDocGenConfigFileName),
+        outfile,
         tsconfig: tsConfig
     });
 
-    const newPath = path.resolve(outDir, compiledJSDocGenConfigFileName);
-    const config: {default: Partial<InitParams<CurrentAIServiceOptions>>} = await import(pathToFileURL(newPath).href);
+    const config: { default: { default: Partial<InitParams<CurrentAIServiceOptions>> } } =
+        await import(fileURL.href);
 
-    return config.default;
+    await unlink(outfile);
+
+    return config.default.default;
 }

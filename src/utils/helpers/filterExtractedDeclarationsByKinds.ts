@@ -1,4 +1,4 @@
-import { ExtractedDeclarations, KindDeclarationNames } from 'src/types/common';
+import { type ExtractedDeclarations, KindDeclarationNames } from 'src/types/common';
 
 /**
  * Функция для фильтрации деклараций по указанным видам.
@@ -9,7 +9,7 @@ import { ExtractedDeclarations, KindDeclarationNames } from 'src/types/common';
 export function filterExtractedDeclarationsByKinds(
     extractedDeclarations: ExtractedDeclarations,
     kinds: `${KindDeclarationNames}`[]
-) {
+): ExtractedDeclarations {
     /**
      * Функция для фильтрации деклараций по указанным видам.
      * @param {ExtractedDeclarations[number]} value - Значение для фильтрации.

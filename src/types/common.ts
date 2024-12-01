@@ -1,5 +1,4 @@
-import { ESLint } from 'eslint';
-import { FileSystemCacheOptions } from 'file-system-cache/lib/types';
+import { type FileSystemCacheOptions } from 'file-system-cache/lib/types';
 import { FileCacheManagerMap } from 'src/utils/FileCacheManagerMap';
 import {
     JSDocableNode,
@@ -7,7 +6,7 @@ import {
     Node,
     ts,
     SourceFile,
-    ProjectOptions,
+    type ProjectOptions,
     InterfaceDeclaration,
     VariableStatement,
     EnumDeclaration,
@@ -362,14 +361,6 @@ export interface PrepareAndApplyJSDoc<
     isNodeInCache(params: IsNodeInCacheParams): boolean;
 
     /**
-     * ESLint для проверки стиля кода.
-     *
-     * @description
-     * Объект ESLint используется для анализа и проверки стиля кода согласно заданным правилам.
-     */
-    esLint: ESLint;
-
-    /**
      * Логгер для записи информационных сообщений.
      *
      * @description
@@ -464,7 +455,7 @@ export interface InitParams<CurrentAIServiceOptions extends AIServiceOptions = A
      *
      * @type {ESLint.Options}
      */
-    esLintOptions?: ESLint.Options;
+    // esLintOptions?: ESLint.Options;
     /**
      * Массив строк, представляющих пути к файлам, которые будут обрабатываться сервисом.
      *
@@ -672,3 +663,21 @@ export type JSDocProviderRegistry = {
         node: JSDocableDeclarationRegistry[key]
     ) => Promise<boolean>;
 };
+
+export type CreateJSDoc<CurrentNode extends ASTJSDocableNode = ASTJSDocableNode> = <
+    CurrentAIServiceOptions extends AIServiceOptions
+>(
+    prepareParams: PrepareAndApplyJSDoc<CurrentNode, CurrentAIServiceOptions>
+) => Promise<boolean>;
+
+export type DeepPartial<T> = T extends object ? { [P in keyof T]?: DeepPartial<T[P]> } : T;
+
+export type DefaultModule<
+    DefaultModule = unknown,
+    Module extends (Record<string, unknown> & {default: never}) = Record<string, unknown> & {default: never & void}
+> = Module & {
+    default: Module & {
+        default: DefaultModule;
+    };
+};
+

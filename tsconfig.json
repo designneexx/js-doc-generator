@@ -12,12 +12,13 @@
         "moduleResolution": "Bundler",
         "useDefineForClassFields": true,
         "allowImportingTsExtensions": false,
-        "noEmit":false,
-        "emitDeclarationOnly": false,
+        "noEmit": false,
+        "emitDeclarationOnly": true,
+        "isolatedDeclarations": true,
         "baseUrl": ".",
         "outDir": "./dist",
         "declaration": true,
-        "declarationDir": "dist/src",
+        "declarationDir": "dist",
         "rootDir": "src",
         "paths": {
             "src/*": ["./src/*"]

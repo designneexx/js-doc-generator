@@ -1,4 +1,4 @@
-import {
+import type {
     ExtractedDeclarations,
     JSDocableDeclarationRegistry,
     JSDocProviderRegistry
@@ -13,7 +13,7 @@ import {
 export function flattenAndProcessDeclarations(
     jsDocProviderRegistry: JSDocProviderRegistry,
     extractedDeclarations: ExtractedDeclarations
-) {
+): Promise<boolean>[] {
     /**
      * Получает провайдеров JSDoc для указанного вида и узлов.
      * @template Kind - Тип вида объявления.

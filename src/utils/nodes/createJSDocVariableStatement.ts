@@ -1,3 +1,5 @@
+import { CreateJSDoc } from 'src/types/common';
+import { VariableStatement } from 'ts-morph';
 import { initJSDocFactory } from '../helpers/initJSDocFactory';
 
 /**
@@ -6,7 +8,7 @@ import { initJSDocFactory } from '../helpers/initJSDocFactory';
  * @param {InitJSDocFactoryParams} initParams - Параметры инициализации фабричной функции.
  * @returns {JSDocVariableStatement} Возвращает переменную с JSDoc комментариями.
  */
-export const createJSDocVariableStatement = initJSDocFactory({
+export const createJSDocVariableStatement: CreateJSDoc<VariableStatement> = initJSDocFactory({
     kind: 'VariableStatement',
     /**
      * Асинхронная функция для получения фрагмента кода с JSDoc комментариями.

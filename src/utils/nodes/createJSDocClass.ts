@@ -1,3 +1,5 @@
+import { type CreateJSDoc } from 'src/types/common';
+import { ClassDeclaration } from 'ts-morph';
 import { initJSDocFactory } from '../helpers/initJSDocFactory';
 
 /**
@@ -7,7 +9,7 @@ import { initJSDocFactory } from '../helpers/initJSDocFactory';
  * @param {string} config.kind - Тип объявления (ClassDeclaration).
  * @returns {Object} - Возвращает объект с методом getJSDocableCodeSnippet.
  */
-export const createJSDocClass = initJSDocFactory({
+export const createJSDocClass: CreateJSDoc<ClassDeclaration> = initJSDocFactory({
     kind: 'ClassDeclaration',
     /**
      * Асинхронно получает фрагмент кода с комментариями JSDoc для класса.
