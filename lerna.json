@@ -1,0 +1,17 @@
+{
+    "packages": [
+        "packages/core"
+    ],
+    "version": "independent",
+    "npmClient": "npm",
+    "command": {
+      "publish": {
+        "message": "publish"
+      }
+    },
+    "bootstrap": {
+      "npmClientArgs": [
+        "--no-package-lock"
+      ]
+    }
+}

@@ -7,7 +7,8 @@
     "commit": "git-cz",
     "changelog": "conventional-changelog -o CHANGELOG.md",
     "postcommit": "npm run changelog",
-    "build": "node esbuild.config.mjs && tsc && tsc-alias"
+    "lerna:pack": "lerna run pack",
+    "lerna:build": "lerna run build"
   },
   "keywords": [
     "auto",
@@ -18,44 +19,21 @@
     "comments",
     "javascript"
   ],
+  "workspaces": [
+    "packages/core"
+  ],
   "author": "designneexx <webmasterondesign@gmail.com>",
-  "exports": {
-    ".": "./dist/index.js"
-  },
-  "types": "dist",
-  "bin": {
-    "auto-js-doc-gen": "dist/index.js"
-  },
   "license": "ISC",
   "description": "Позволяет автоматически генерировать документацию JSDoc к вашему коду на typescript",
   "files": [
-    "dist"
+    "packages/core/dist"
   ],
   "repository": "github:designneexx/js-doc-generator",
-  "config": {
-    "commitizen": {
-      "path": "./node_modules/cz-conventional-changelog"
-    }
-  },
-  "dependencies": {
-    "chalk": "^5.3.0",
-    "commander": "^12.1.0",
-    "crypto-js": "^4.2.0",
-    "esbuild": "^0.24.0",
-    "file-system-cache": "^2.4.7",
-    "ts-morph": "^24.0.0",
-    "uuid": "^11.0.2",
-    "winston": "^3.17.0"
-  },
   "devDependencies": {
     "@eslint/eslintrc": "^3.1.0",
     "@eslint/js": "^9.13.0",
-    "@types/chalk": "^0.4.31",
-    "@types/crypto-js": "^4.2.2",
     "@types/eslint": "^9.6.1",
     "@types/node": "^22.8.6",
-    "@types/uuid": "^10.0.0",
-    "@types/winston": "^2.4.4",
     "commitizen": "^4.3.1",
     "conventional-changelog-cli": "^5.0.0",
     "cz-conventional-changelog": "^3.3.0",
@@ -64,6 +42,7 @@
     "eslint-plugin-import": "^2.31.0",
     "eslint-plugin-prettier": "^5.2.1",
     "eslint-plugin-unused-imports": "^4.1.4",
+    "lerna": "^8.1.9",
     "prettier": "^3.3.3",
     "tsc-alias": "^1.8.10",
     "typescript": "^5.7.2",

@@ -1,0 +1,55 @@
+{
+  "version": "1.0.0",
+  "name": "@auto-js-doc-generator/core",
+  "scripts": {
+    "lint:check": "eslint src \"packages/core/**/*.{ts,tsx}\"",
+    "lint:write": "eslint src \"packages/core/**/*.{ts,tsx}\" --fix",
+    "build": "node esbuild.config.mjs",
+    "pack": "npm pack",
+    "cz": "git-cz",
+    "changelog": "conventional-changelog -o CHANGELOG.md",
+    "postcommit": "npm run changelog"
+  },
+  "keywords": [
+    "auto",
+    "auto documentation",
+    "typescript",
+    "documentation",
+    "js doc",
+    "comments",
+    "javascript"
+  ],
+  "author": "designneexx <webmasterondesign@gmail.com>",
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "types": "dist",
+  "bin": {
+    "auto-js-doc-gen": "dist/index.js"
+  },
+  "license": "ISC",
+  "description": "Позволяет автоматически генерировать документацию JSDoc к вашему коду на typescript",
+  "files": [
+    "dist"
+  ],
+  "repository": "github:designneexx/js-doc-generator",
+  "commitizen": {
+    "path": "cz-conventional-changelog"
+  },
+  "devDependencies": {
+    "@types/chalk": "^0.4.31",
+    "@types/crypto-js": "^4.2.2",
+    "@types/uuid": "^10.0.0",
+    "@types/winston": "^2.4.4",
+    "chalk": "^5.3.0",
+    "commander": "^12.1.0",
+    "crypto-js": "^4.2.0",
+    "file-system-cache": "^3.0.0-alpha.8",
+    "ts-morph": "^24.0.0",
+    "uuid": "^11.0.3",
+    "winston": "^3.17.0"
+  },
+  "dependencies": {
+    "esbuild": "^0.24.0"
+  }
+}

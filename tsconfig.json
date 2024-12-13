@@ -19,11 +19,11 @@
         "outDir": "./dist",
         "declaration": true,
         "declarationDir": "dist",
-        "rootDir": "src",
+        "rootDir": "packages",
         "paths": {
-            "src/*": ["./src/*"]
+            "core/*": ["./packages/core/src/*"]
         }
     },
-    "include": ["src/**/*"],
+    "include": ["packages/**/*"],
     "exclude": ["node_modules", "dist"]
 }
