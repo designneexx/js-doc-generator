@@ -8,7 +8,8 @@
     "changelog": "conventional-changelog -o CHANGELOG.md",
     "postcommit": "npm run changelog",
     "lerna:pack": "lerna run pack",
-    "lerna:build": "lerna run build"
+    "lerna:build": "lerna run build",
+    "publish": "lerna publish --no-private"
   },
   "keywords": [
     "auto",

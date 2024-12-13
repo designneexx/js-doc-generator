@@ -2,3 +2,4 @@ node_modules
 dist
 .cache
 packages/*/dist
+lerna-debug.log
