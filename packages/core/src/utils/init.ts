@@ -74,7 +74,7 @@ export async function init<CurrentAIServiceOptions extends AIServiceOptions>(
     const kinds = globalGenerationOptions?.kinds || [];
     const sourceFiles = project.addSourceFilesAtPaths(files);
 
-    logger.info(`${chalk.gray('Файлов в проекте загружено: ')} ${chalk.bold(sourceFiles.length)}`);
+    logger.info(`${chalk.gray('Файлов в проекте загружено: ')} ${chalk.bold(sourceFiles.length.toString())}`);
 
     const sourceFilesJSDocProcess = sourceFiles.map(async (sourceFile) => {
         logger.info(

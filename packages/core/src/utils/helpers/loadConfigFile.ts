@@ -5,6 +5,10 @@ import { pathToFileURL } from 'url';
 import type { AIServiceOptions, InitParams } from 'core/types/common';
 import { v5 } from 'uuid';
 
+/**
+ * Массив возможных конфигурационных файлов для JSDocGen.
+ * @type {string[]}
+ */
 const possibleConfigFiles = [
     'jsdocgen.config.ts',
     'jsdocgen.config.mts',
@@ -14,13 +18,34 @@ const possibleConfigFiles = [
     'jsdocgen.config.cjs'
 ];
 
+/**
+ * Параметры для загрузки конфигурации.
+ */
 export interface LoadConfigParams {
+    /**
+     * Текущая рабочая директория.
+     */
     cwd?: string;
+    /**
+     * Текущая директория.
+     */
     currentDir?: string;
+    /**
+     * Путь к файлу tsconfig.
+     */
     tsConfig?: string;
+    /**
+     * Путь к файлу конфигурации jsDocGen.
+     */
     jsDocGenConfig?: string;
 }
 
+/**
+ * Находит конфигурационный файл для jsDocGen.
+ * @param {string} cwd - Текущая рабочая директория (по умолчанию process.cwd())
+ * @param {string} jsDocGenConfig - Путь к конфигурационному файлу (если указан)
+ * @returns {string} - Путь к найденному конфигурационному файлу
+ */
 export function findConfigFile(cwd: string = process.cwd(), jsDocGenConfig = ''): string {
     if (jsDocGenConfig) {
         const resolvedPath = path.resolve(cwd, jsDocGenConfig);
@@ -40,6 +65,12 @@ export function findConfigFile(cwd: string = process.cwd(), jsDocGenConfig = '')
     throw new Error('Конфигурационный файл jsdocgen.config.{js,cjs,mjs,ts,cts,mts} не найден');
 }
 
+/**
+ * Загружает конфигурацию из файла, компилирует его с помощью esbuild и возвращает часть инициализационных параметров.
+ * @template CurrentAIServiceOptions - обобщенный тип для параметров сервиса AI
+ * @param {LoadConfigParams} [params] - параметры загрузки конфигурации
+ * @returns {Promise<Partial<InitParams<CurrentAIServiceOptions>>>} - часть инициализационных параметров
+ */
 export async function loadConfig<CurrentAIServiceOptions extends AIServiceOptions>(
     params?: LoadConfigParams
 ): Promise<Partial<InitParams<CurrentAIServiceOptions>>> {

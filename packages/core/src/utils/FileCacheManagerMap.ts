@@ -2,6 +2,10 @@ import { Cache } from 'file-system-cache';
 import { type FileCacheHashMetadata } from 'src/types/common';
 import { getCacheList } from './helpers/getCacheList';
 
+/**
+ * Ключ для кэширования
+ * @type {string}
+ */
 export const CACHE_KEY = 'CACHE_KEY';
 
 /**

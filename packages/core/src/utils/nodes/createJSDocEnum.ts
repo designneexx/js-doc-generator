@@ -12,6 +12,11 @@ import { initJSDocFactory } from '../helpers/initJSDocFactory';
  */
 export const createJSDocEnum: CreateJSDoc<EnumDeclaration> = initJSDocFactory({
     kind: 'EnumDeclaration',
+    /**
+     * Асинхронный метод для получения фрагмента кода, подлежащего JSDoc.
+     * @param {JSDocableCodeSnippetParams} params - Параметры для генерации JSDoc.
+     * @returns {string} - Сгенерированный JSDoc для EnumDeclaration.
+     */
     async getJSDocableCodeSnippet(params) {
         /**
          * Деструктуризация параметров.

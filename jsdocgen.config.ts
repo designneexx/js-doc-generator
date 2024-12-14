@@ -5,7 +5,7 @@ import axios from 'axios';
  * HTTP-клиент для выполнения запросов на сервер
  * @type {import("axios").AxiosInstance}
  */ const axiosClient = axios.create({
-    baseURL: 'http://localhost:3002'
+    baseURL: process.env.JS_DOC_GENERATOR_SERVICe
 });
 
 /**
@@ -89,9 +89,14 @@ const jsDocGeneratorService = {
 };
 
 export default {
-    files: ['src/**/*.{ts,tsx}'],
+    files: ['packages/**/*.{ts,tsx}'],
     jsDocGeneratorService,
     projectOptions: {
         tsConfigFilePath: 'tsconfig.json'
+    },
+    globalGenerationOptions: {
+        jsDocOptions: {
+            mode: 1
+        }
     }
 };

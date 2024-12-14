@@ -64,6 +64,12 @@ export function saveJSDocProcessedInCache(
             kinds
         );
 
+        /**
+         * Фильтрует извлеченные объявления по типам.
+         * @param {ExtractedDeclaration[]} declarations - Извлеченные объявления.
+         * @param {string[]} kinds - Список типов для фильтрации.
+         * @returns {ExtractedDeclaration[]} - Отфильтрованные объявления.
+         */
         allowedExtractedDeclarations.flatMap(flattenDeclarations).forEach((node) => {
             /**
              * Получает кэш из узла и файла исходного кода.
@@ -74,6 +80,14 @@ export function saveJSDocProcessedInCache(
              * @returns {CacheData} - Данные кэша.
              */
             const data = getCacheFromNodeSourceFile({ node, sourceFile, fileCacheManagerMap });
+            /**
+             * Получает кэш из узла и файла исходного кода.
+             * @param {GetCacheFromNodeSourceFileParams} params - Параметры для получения кэша.
+             * @param {Node} params.node - Узел.
+             * @param {SourceFile} params.sourceFile - Файл исходного кода.
+             * @param {Map<string, FileCacheManager>} params.fileCacheManagerMap - Карта менеджеров кэша файлов.
+             * @returns {CacheData} - Данные кэша.
+             */
             const { hashCodeSnippet, hashSourceCode, codeSnippetHashMap } = data;
 
             codeSnippetHashMap.set(hashCodeSnippet, {

@@ -9,12 +9,28 @@ import {
 import { loadConfig } from './utils/helpers/loadConfigFile';
 import { init } from './utils/init';
 
+/**
+ * Интерфейс для параметров конфигурации.
+ */
 export interface ConfigParams {
+    /**
+     * Путь к файлу tsconfig.json.
+     */
     tsConfig?: string;
+    /**
+     * Рабочая директория, в которой будет выполняться процесс.
+     */
     cwd?: string;
+    /**
+     * Путь к файлу конфигурации.
+     */
     config?: string;
 }
 
+/**
+ * Функция для запуска CLI генератора документации JSDoc.
+ * @returns {Command} Возвращает объект Command для дальнейшей настройки CLI.
+ */
 export function runByCli(): Command {
     const command = new Command();
 
@@ -31,6 +47,12 @@ export function runByCli(): Command {
         .option('--tsconfig', 'Путь до конфига TypeScript, если конфигурационный файл написан на TS. По умолчанию tsconfig.json')
         .option('--config', 'Путь до файла конфигурации. По умолчанию jsdocgen.config.{js,cjs,mjs,ts,cts,mts}', '')
         .action(async (_arg, options) => {
+            /**
+             * @typedef {Object} ConfigParams
+             * @property {string} cwd - Базовая директория для начала работы генерации документации.
+             * @property {string} tsConfig - Путь до конфига TypeScript.
+             * @property {string} config - Путь до файла конфигурации.
+             */
             const parsedOptions: ConfigParams = options;
             const { cwd, tsConfig, config } = parsedOptions;
 
@@ -40,6 +62,14 @@ export function runByCli(): Command {
     return command;
 }
 
+/**
+ * Функция start запускает процесс инициализации и запуска генерации документации по переданным параметрам конфигурации.
+ *
+ * @template CurrentAIServiceOptions - обобщенный тип параметров сервиса AI
+ * @param {ConfigParams | null} [configParams] - параметры конфигурации, которые могут быть переданы или оставлены пустыми
+ * @param {DeepPartial<InitParams<CurrentAIServiceOptions>>} [overrideConfig] - переопределенные параметры конфигурации
+ * @returns {Promise<void>} - промис, который завершается после успешной инициализации и запуска генерации
+ */
 export async function start<CurrentAIServiceOptions extends AIServiceOptions>(
     configParams?: ConfigParams | null,
     overrideConfig?: DeepPartial<InitParams<CurrentAIServiceOptions>>

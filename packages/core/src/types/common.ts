@@ -16,6 +16,10 @@ import {
 } from 'ts-morph';
 import winston from 'winston';
 
+/**
+ * Опции для кэша файловой системы.
+ * Этот тип представляет собой набор опций, которые могут быть переданы в конструктор класса FileSystemCache.
+ */
 type FileSystemCacheOptions = Exclude<ConstructorParameters<typeof FileSystemCache>[number], undefined>;
 
 /**
@@ -666,18 +670,38 @@ export type JSDocProviderRegistry = {
     ) => Promise<boolean>;
 };
 
+/**
+ * Тип CreateJSDoc представляет собой функцию, которая принимает prepareParams и возвращает Promise<boolean>.
+ * @template CurrentNode - тип узла AST, который имеет JSDoc
+ * @template CurrentAIServiceOptions - тип параметров службы AI
+ * @param prepareParams - функция подготовки и применения JSDoc к узлу AST
+ * @returns Promise<boolean> - промис с булевым значением
+ */
 export type CreateJSDoc<CurrentNode extends ASTJSDocableNode = ASTJSDocableNode> = <
     CurrentAIServiceOptions extends AIServiceOptions
 >(
     prepareParams: PrepareAndApplyJSDoc<CurrentNode, CurrentAIServiceOptions>
 ) => Promise<boolean>;
 
+/**
+ * Represents a type that makes all properties of the original type optional recursively.
+ * @template T - The original type to make partial.
+ */
 export type DeepPartial<T> = T extends object ? { [P in keyof T]?: DeepPartial<T[P]> } : T;
 
+/**
+ * Обобщенный тип DefaultModule, представляющий модуль по умолчанию.
+ * @template DefaultModule - Тип модуля по умолчанию.
+ * @template Module - Тип модуля, который должен содержать все поля типа DefaultModule и не содержать поле default.
+ */
 export type DefaultModule<
     DefaultModule = unknown,
     Module extends (Record<string, unknown> & {default: never}) = Record<string, unknown> & {default: never & void}
 > = Module & {
+    /**
+     * Поле default, представляющее модуль по умолчанию.
+     * @type {Module & { default: DefaultModule }}
+     */
     default: Module & {
         default: DefaultModule;
     };

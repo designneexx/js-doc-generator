@@ -13,7 +13,15 @@ import { initJSDocFactory } from '../helpers/initJSDocFactory';
 export const createJSDocFunction: CreateJSDoc<FunctionDeclaration> =
     initJSDocFactory<FunctionDeclaration>({
         kind: 'FunctionDeclaration',
+        /**
+         * Асинхронная функция для получения фрагмента кода, подлежащего JSDoc.
+         * @param {JSDocableCodeSnippetParams} params - Параметры для генерации JSDoc.
+         * @returns {string} - Сгенерированный JSDoc для FunctionDeclaration.
+         */
         async getJSDocableCodeSnippet(params) {
+            /**
+             * Деструктуризация параметров: jsDocGeneratorService, jsDocGeneratorServiceOptions, aiServiceOptions.
+             */
             const { jsDocGeneratorService, jsDocGeneratorServiceOptions, aiServiceOptions } =
                 params;
 
