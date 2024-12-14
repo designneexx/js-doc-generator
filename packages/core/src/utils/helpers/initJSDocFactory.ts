@@ -81,12 +81,6 @@ export function initJSDocFactory<
 
         logger.info(chalk.green('Успешный ответ от сервиса по кодогенерации.'));
 
-        logger.info(
-            `${chalk.underline('Форматирую фрагмент кода через ')} ${chalk.yellow('ESLint')}`
-        );
-
-        logger.info(chalk.green('Код успешно форматирован.'));
-
         const jsDocs = getJSDocableNodesFromCodeSnippet(jsDocableCodeSnippet);
 
         /**

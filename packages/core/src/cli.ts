@@ -9,9 +9,10 @@ import {
 import { loadConfig } from './utils/helpers/loadConfigFile';
 import { init } from './utils/init';
 
-export interface ParsedOptions {
-    kinds?: `${KindDeclarationNames}` | `${KindDeclarationNames}`[] | null;
-    files?: string[] | string | null;
+export interface ConfigParams {
+    tsConfig?: string;
+    cwd?: string;
+    config?: string;
 }
 
 export function runByCli(): Command {
@@ -26,40 +27,37 @@ export function runByCli(): Command {
 
     command
         .command('generate')
-        .option('--kinds [value]', 'Список узлов для генерации документации', [] as string[])
-        .option('--files [value]', 'Список файлов для генерации комментариев JSDoc', [] as string[])
+        .option('--cwd', 'Базовая директория для началы работы генерации документации. Библиотека берет от начала этого пути конфигурационный файл и читает tsconfig.json, если конфиг написан на TS')
+        .option('--tsconfig', 'Путь до конфига TypeScript, если конфигурационный файл написан на TS. По умолчанию tsconfig.json')
+        .option('--config', 'Путь до файла конфигурации. По умолчанию jsdocgen.config.{js,cjs,mjs,ts,cts,mts}', '')
         .action(async (_arg, options) => {
-            const parsedOptions: ParsedOptions = options;
-            const { files, kinds } = parsedOptions;
-            const overrideConfig: DeepPartial<InitParams> = {};
+            const parsedOptions: ConfigParams = options;
+            const { cwd, tsConfig, config } = parsedOptions;
 
-            if (files) {
-                overrideConfig.files = Array.isArray(files) ? files : [files];
-            }
-
-            if (kinds) {
-                overrideConfig.globalGenerationOptions = {
-                    kinds: Array.isArray(kinds) ? kinds : [kinds]
-                };
-            }
-
-            await start(overrideConfig);
+            await start({cwd, tsConfig, config});
         });
 
     return command;
 }
 
 export async function start<CurrentAIServiceOptions extends AIServiceOptions>(
+    configParams?: ConfigParams | null,
     overrideConfig?: DeepPartial<InitParams<CurrentAIServiceOptions>>
 ): Promise<void> {
-    const config = await loadConfig<CurrentAIServiceOptions>();
+    try {
+        const config = await loadConfig<CurrentAIServiceOptions>({...configParams});
 
-    await init({
-        ...config,
-        ...overrideConfig,
-        globalGenerationOptions: {
-            ...config.globalGenerationOptions,
-            ...overrideConfig?.globalGenerationOptions
-        }
-    } as InitParams<CurrentAIServiceOptions>);
+        await init({
+            ...config,
+            ...overrideConfig,
+            globalGenerationOptions: {
+                ...config.globalGenerationOptions,
+                ...overrideConfig?.globalGenerationOptions
+            }
+        } as InitParams<CurrentAIServiceOptions>);
+    } catch(e) {
+        const err = e as Error;
+        console.log('Не удалось прочитать файл конфигурации или запустить генерацию js doc. Подробнее об ошибке: ', err.message);
+        process.exit(1);
+    }
 }

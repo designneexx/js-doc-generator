@@ -3,3 +3,4 @@ dist
 .cache
 packages/*/dist
 lerna-debug.log
+.env

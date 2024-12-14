@@ -18,10 +18,18 @@ export interface LoadConfigParams {
     cwd?: string;
     currentDir?: string;
     tsConfig?: string;
-    outDir?: string;
+    jsDocGenConfig?: string;
 }
 
-export function findConfigFile(cwd: string = process.cwd()): string {
+export function findConfigFile(cwd: string = process.cwd(), jsDocGenConfig = ''): string {
+    if (jsDocGenConfig) {
+        const resolvedPath = path.resolve(cwd, jsDocGenConfig);
+        
+        if (existsSync(resolvedPath)) {
+            return resolvedPath;
+        }
+    }
+
     for (const configFile of possibleConfigFiles) {
         const resolvedPath = path.resolve(cwd, configFile);
         if (existsSync(resolvedPath)) {
@@ -29,7 +37,7 @@ export function findConfigFile(cwd: string = process.cwd()): string {
         }
     }
 
-    throw new Error('Конфигурационный файл не найден');
+    throw new Error('Конфигурационный файл jsdocgen.config.{js,cjs,mjs,ts,cts,mts} не найден');
 }
 
 export async function loadConfig<CurrentAIServiceOptions extends AIServiceOptions>(
@@ -38,9 +46,11 @@ export async function loadConfig<CurrentAIServiceOptions extends AIServiceOption
     const {
         cwd = process.cwd(),
         currentDir = __dirname,
-        tsConfig = path.resolve(cwd, 'tsconfig.json')
+        jsDocGenConfig,
+        tsConfig: tsConfigBase = 'tsconfig.json'
     } = params || {};
-    const configPath = findConfigFile(cwd);
+    const tsConfig = path.resolve(cwd, tsConfigBase);
+    const configPath = findConfigFile(cwd, jsDocGenConfig);
     const fileStat = await stat(configPath);
     const mtime = fileStat.mtime.getTime();
     const uuid = v5(mtime.toString(), v5.URL);
@@ -55,7 +65,7 @@ export async function loadConfig<CurrentAIServiceOptions extends AIServiceOption
         entryPoints: [configPath],
         bundle: true,
         packages: 'external',
-        external: ['auto-js-doc-generator', 'esbuild'],
+        external: ['auto-js-doc-generator', 'esbuild', '@auto-js-doc-generator/core'],
         platform: 'node',
         outfile,
         tsconfig: tsConfig

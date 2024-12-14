@@ -51,7 +51,6 @@ export async function init<CurrentAIServiceOptions extends AIServiceOptions>(
     logger.info(`Запуск кодогенерации ${chalk.yellow('designexx JSDocGenerator')}`);
 
     const project = new Project({ ...projectOptions });
-    // const esLint = new ESLint({ ...esLintOptions, fix: true, overrideConfig: { files } });
 
     logger.info(chalk.yellow('Пытаюсь получить информацию из кэша...'));
 
@@ -109,30 +108,9 @@ export async function init<CurrentAIServiceOptions extends AIServiceOptions>(
             false
         );
 
-        if (processedDeclarationErrors.length) {
-            for (const error of processedDeclarationErrors) {
-                logger.error(
-                    chalk.red(`Ошибка обработки файла: ${sourceFile.getFilePath()}`),
-                    error.reason
-                );
-            }
-        }
-
         if (processedDeclarationErrors.length === processedDeclarations.length) {
             throw new Error(
                 'Не удалось сохранить изменения в файле, так как обработка всех узлов завершилась с ошибками'
-            );
-        }
-
-        if (isDeclarationSucessProcessed) {
-            await sourceFile.save();
-
-            logger.info(
-                `${chalk.green('Успешная обработка файла ')} ${chalk.bold(sourceFile.getFilePath())}`
-            );
-        } else {
-            logger.info(
-                `${chalk.green('Нет изменений для сохранения файла ')} ${chalk.bold(sourceFile.getFilePath())}`
             );
         }
 
@@ -157,28 +135,6 @@ export async function init<CurrentAIServiceOptions extends AIServiceOptions>(
         }
 
         logger.info(chalk.green('Проект успешно сохранен.'));
-
-        logger.info(chalk.gray('Отдаю код в ESLint для восстановления форматирования...'));
-
-        // let results: ESLint.LintResult[] = [];
-
-        // try {
-        //     results = await esLint.lintFiles(files);
-        // } catch (e) {
-        //     logger.error(
-        //         chalk.red('Не удалось форматировать код с помощью ESLint:\n', JSON.stringify(e))
-        //     );
-        // }
-
-        // if (results.length > 0) {
-        //     logger.info(chalk.gray('Применяю изменения линтера к файлам'));
-
-        //     await ESLint.outputFixes(results);
-
-        //     logger.info(chalk.green('Линтинг был успешно завершен.'));
-        // } else {
-        //     logger.info('Нет данных для форматирования кода');
-        // }
 
         logger.info('Сохраняю данные в кэш');
 
