@@ -3,6 +3,7 @@ import { runByCli } from './cli';
 
 export * from './utils/init';
 export * from './types/common';
+export * from './utils/helpers/loadConfigFile';
 
 /**
  * Основная функция, запускающая парсер командной строки
