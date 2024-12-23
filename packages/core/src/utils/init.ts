@@ -1,16 +1,15 @@
-import chalk from 'chalk';
 import { Cache } from 'file-system-cache';
-import { Project } from 'ts-morph';
-import winston from 'winston';
-import { type AIServiceOptions, type InitParams, KindDeclarationNames } from '../types/common';
+import { Project, SyntaxKind } from 'ts-morph';
+import { FileNodeSourceCode, type AIServiceOptions, type InitParams } from '../types/common';
 import { createFileCacheManagerMap } from './helpers/createFileCacheManagerMap';
-import { extractDeclarationsFromSourceFile } from './helpers/extractDeclarationsFromSourceFile';
-import { filterExtractedDeclarationsByKinds } from './helpers/filterExtractedDeclarationsByKinds';
-import { flattenAndProcessDeclarations } from './helpers/flattentAndProcessDeclarations';
 import { isNodeInCache } from './helpers/isNodeInCache';
-import { isPromiseResolvedAndTrue } from './helpers/isPromiseResolvedAndTrue';
 import { saveJSDocProcessedInCache } from './helpers/saveJSDocsProcessedInCache';
-import { JSDocInitializer, type JSDocInitializerConstructor } from './JSDocInitializer';
+import { jsDocClassSetter } from './nodes/createJSDocClass';
+import { jsDocEnumSetter } from './nodes/createJSDocEnum';
+import { jsDocFunctionSetter } from './nodes/createJSDocFunction';
+import { jsDocInterfaceSetter } from './nodes/createJSDocInterface';
+import { jsDocTypeAliasSetter } from './nodes/createJSDocTypeAlias';
+import { JSDocVariableStatementSetter } from './nodes/createJSDocVariableStatement';
 
 /**
  * Инициализирует процесс генерации JSDoc комментариев для заданных исходных файлов проекта.
@@ -43,114 +42,75 @@ export async function init<CurrentAIServiceOptions extends AIServiceOptions>(
         hash: 'sha1', // (optional) A hashing algorithm used within the cache key.
         ...cacheOptions
     });
-    const logger = winston.createLogger({
-        format: winston.format.combine(winston.format.colorize(), winston.format.simple()),
-        transports: [new winston.transports.Console()]
-    });
 
-    logger.info(`Запуск кодогенерации ${chalk.yellow('designexx JSDocGenerator')}`);
-
-    const project = new Project({ ...projectOptions });
-
-    logger.info(chalk.yellow('Пытаюсь получить информацию из кэша...'));
+    const project = new Project({ ...projectOptions, skipAddingFilesFromTsConfig: true });
 
     const fileCacheManagerMap = await createFileCacheManagerMap(cache);
 
-    logger.info(
-        fileCacheManagerMap.size === 0
-            ? chalk.gray('База кэша пуста')
-            : chalk.green('Успешно загружена информация из кэша')
-    );
-
-    const config: JSDocInitializerConstructor<CurrentAIServiceOptions> = {
-        project,
-        jsDocGeneratorService,
-        globalGenerationOptions,
-        detailGenerationOptions,
-        fileCacheManagerMap,
-        isNodeInCache,
-        logger
-    };
     const kinds = globalGenerationOptions?.kinds || [];
+    const { aiServiceOptions: globalAiServiceOptions, jsDocOptions: globalJSDocOptions } =
+        globalGenerationOptions || {};
     const sourceFiles = project.addSourceFilesAtPaths(files);
 
-    logger.info(`${chalk.gray('Файлов в проекте загружено: ')} ${chalk.bold(sourceFiles.length.toString())}`);
+    const jsDocNodeSetterList = [
+        jsDocClassSetter,
+        jsDocInterfaceSetter,
+        jsDocFunctionSetter,
+        jsDocEnumSetter,
+        jsDocTypeAliasSetter,
+        JSDocVariableStatementSetter
+    ];
 
-    const sourceFilesJSDocProcess = sourceFiles.map(async (sourceFile) => {
-        logger.info(
-            `${chalk.gray('Обработка всех документируемых узлов в файле ')} ${chalk.bold(sourceFile.getFilePath())}`
-        );
-
-        const jsDocInitializer = new JSDocInitializer(config, sourceFile);
-        const jsDocProviderRegistry = {
-            [KindDeclarationNames.ClassDeclaration]: jsDocInitializer.createJSDocClass,
-            [KindDeclarationNames.EnumDeclaration]: jsDocInitializer.createJSDocEnum,
-            [KindDeclarationNames.InterfaceDeclaration]: jsDocInitializer.createJSDocInterface,
-            [KindDeclarationNames.FunctionDeclaration]: jsDocInitializer.createJSDocFunction,
-            [KindDeclarationNames.VariableStatement]: jsDocInitializer.createJSDocVariableStatement,
-            [KindDeclarationNames.TypeAliasDeclaration]: jsDocInitializer.createJSDocTypeAlias
-        };
-        const extractedDeclarations = extractDeclarationsFromSourceFile(sourceFile);
-        const allowedExtractedDeclarations = filterExtractedDeclarationsByKinds(
-            extractedDeclarations,
-            kinds
-        );
-        const listOfFlattenedJSDocProcess = flattenAndProcessDeclarations(
-            jsDocProviderRegistry,
-            allowedExtractedDeclarations
-        );
-        const processedDeclarations = await Promise.allSettled(listOfFlattenedJSDocProcess);
-        const processedDeclarationErrors: PromiseRejectedResult[] = processedDeclarations.filter(
-            (item) => item.status === 'rejected'
-        );
-        const isDeclarationSucessProcessed = processedDeclarations.some(
-            isPromiseResolvedAndTrue,
-            false
-        );
-
-        if (processedDeclarationErrors.length === processedDeclarations.length) {
-            throw new Error(
-                'Не удалось сохранить изменения в файле, так как обработка всех узлов завершилась с ошибками'
-            );
-        }
-
-        return isDeclarationSucessProcessed;
-    });
-    const sourceFilesJSDocProcessed = await Promise.allSettled(sourceFilesJSDocProcess);
-
-    const isSourceFileSuccessProcessed = sourceFilesJSDocProcessed.some(
-        isPromiseResolvedAndTrue,
-        false
+    const allowedJsDocNodeSetterList = jsDocNodeSetterList.filter(
+        (item) => kinds.length === 0 || kinds.includes(item.kind)
     );
 
-    if (isSourceFileSuccessProcessed) {
-        logger.info(chalk.gray('Сохраняю все изменения в проекте...'));
+    const jsDocNodePromises = sourceFiles.flatMap((sourceFile) => {
+        return allowedJsDocNodeSetterList.flatMap((jsDocNodeSetter) => {
+            const { kind, setJSDocToNode } = jsDocNodeSetter;
+            const nodes = sourceFile.getChildrenOfKind(SyntaxKind[kind]);
 
-        try {
-            await project.save();
-        } catch (e) {
-            logger.error(chalk.red('Не удалось сохранить проект:\n', JSON.stringify(e)));
+            return nodes.reduce((acc, node) => {
+                const hasCached = isNodeInCache({ node, fileCacheManagerMap, sourceFile });
 
-            return;
-        }
+                if (hasCached) {
+                    return acc;
+                }
 
-        logger.info(chalk.green('Проект успешно сохранен.'));
+                const currentDetailGenerationOptions = detailGenerationOptions?.[kind];
+                const detailJSDocOptions = currentDetailGenerationOptions?.jsDocOptions || {};
+                const detailAiServiceOptions =
+                    currentDetailGenerationOptions?.aiServiceOptions || {};
+                const aiServiceOptions = {
+                    ...globalAiServiceOptions,
+                    ...detailAiServiceOptions
+                } as CurrentAIServiceOptions;
+                const jsDocOptions = {
+                    ...globalJSDocOptions,
+                    ...detailJSDocOptions
+                };
 
-        logger.info('Сохраняю данные в кэш');
+                acc.push(
+                    setJSDocToNode({
+                        jsDocGeneratorService,
+                        jsDocOptions,
+                        node,
+                        sourceFile,
+                        aiServiceOptions
+                    })
+                );
 
-        try {
-            await saveJSDocProcessedInCache({
-                cache,
-                projectOptions,
-                kinds,
-                files
-            });
+                return acc;
+            }, [] as Promise<FileNodeSourceCode>[]);
+        });
+    });
 
-            logger.info(chalk.green('Обработка сохранена в кэше'));
-        } catch (e) {
-            logger.error(chalk.red('Не удалось сохранить кэш'), e);
-        }
-    } else {
-        logger.info(chalk.green('Нет изменений для сохранения'));
-    }
+    const fileNodeSourceCodeList = await Promise.all(jsDocNodePromises);
+
+    await project.save();
+
+    await saveJSDocProcessedInCache({
+        cache,
+        fileNodeSourceCodeList
+    });
 }

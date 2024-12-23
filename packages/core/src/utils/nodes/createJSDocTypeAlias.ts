@@ -1,5 +1,4 @@
-import { type CreateJSDoc } from 'core/types/common';
-import { TypeAliasDeclaration } from 'ts-morph';
+import { JSDocNodeSetter, KindDeclarationNames } from 'core/types/common';
 import { initJSDocFactory } from '../helpers/initJSDocFactory';
 
 /**
@@ -10,14 +9,16 @@ import { initJSDocFactory } from '../helpers/initJSDocFactory';
  * @param {AIServiceOptions} params.aiServiceOptions - Опции для AI-сервиса.
  * @returns {string} - Сгенерированный JSDoc алиас типа.
  */
-export const createJSDocTypeAlias: CreateJSDoc<TypeAliasDeclaration> = initJSDocFactory({
-    kind: 'TypeAliasDeclaration',
-    async getJSDocableCodeSnippet(params) {
-        const { jsDocGeneratorService, jsDocGeneratorServiceOptions, aiServiceOptions } = params;
+export const jsDocTypeAliasSetter: JSDocNodeSetter<KindDeclarationNames.TypeAliasDeclaration> =
+    initJSDocFactory({
+        kind: KindDeclarationNames.TypeAliasDeclaration,
+        async getJSDocableCodeSnippet(params) {
+            const { jsDocGeneratorService, jsDocGeneratorServiceOptions, aiServiceOptions } =
+                params;
 
-        return jsDocGeneratorService.createJSDocTypeAlias(
-            jsDocGeneratorServiceOptions,
-            aiServiceOptions
-        );
-    }
-});
+            return jsDocGeneratorService.createJSDocTypeAlias(
+                jsDocGeneratorServiceOptions,
+                aiServiceOptions
+            );
+        }
+    });

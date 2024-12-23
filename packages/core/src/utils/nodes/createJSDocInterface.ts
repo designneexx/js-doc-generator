@@ -1,5 +1,4 @@
-import { type CreateJSDoc } from 'core/types/common';
-import { InterfaceDeclaration } from 'ts-morph';
+import { JSDocNodeSetter, KindDeclarationNames } from 'core/types/common';
 import { initJSDocFactory } from '../helpers/initJSDocFactory';
 
 /**
@@ -10,14 +9,16 @@ import { initJSDocFactory } from '../helpers/initJSDocFactory';
  * @param {Object} params.aiServiceOptions - Опции для AI сервиса.
  * @returns {string} - Сгенерированный JSDoc интерфейс.
  */
-export const createJSDocInterface: CreateJSDoc<InterfaceDeclaration> = initJSDocFactory({
-    kind: 'InterfaceDeclaration',
-    async getJSDocableCodeSnippet(params) {
-        const { jsDocGeneratorService, jsDocGeneratorServiceOptions, aiServiceOptions } = params;
+export const jsDocInterfaceSetter: JSDocNodeSetter<KindDeclarationNames.InterfaceDeclaration> =
+    initJSDocFactory({
+        kind: KindDeclarationNames.InterfaceDeclaration,
+        async getJSDocableCodeSnippet(params) {
+            const { jsDocGeneratorService, jsDocGeneratorServiceOptions, aiServiceOptions } =
+                params;
 
-        return jsDocGeneratorService.createJSDocInterface(
-            jsDocGeneratorServiceOptions,
-            aiServiceOptions
-        );
-    }
-});
+            return jsDocGeneratorService.createJSDocInterface(
+                jsDocGeneratorServiceOptions,
+                aiServiceOptions
+            );
+        }
+    });

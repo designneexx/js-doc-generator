@@ -1,4 +1,4 @@
-import { type IsNodeInCacheParams } from 'core/types/common';
+import { FileNodeSourceCode, type IsNodeInCacheParams } from 'core/types/common';
 import { getCacheFromNodeSourceFile } from './getCacheFromNodeSourceFile';
 
 /**
@@ -11,7 +11,11 @@ import { getCacheFromNodeSourceFile } from './getCacheFromNodeSourceFile';
  */
 export function isNodeInCache(nodeCacheParams: IsNodeInCacheParams): boolean {
     const { node, fileCacheManagerMap, sourceFile } = nodeCacheParams;
-    const data = getCacheFromNodeSourceFile({ node, sourceFile, fileCacheManagerMap });
+    const fileNodeSourceCode: FileNodeSourceCode = {
+        fileSourceCode: sourceFile.getFullText(),
+        nodeSourceCode: node.getFullText()
+    };
+    const data = getCacheFromNodeSourceFile({ fileNodeSourceCode, fileCacheManagerMap });
     const { codeSnippetHashMap, hashCodeSnippet } = data;
     const isIdentityCache = codeSnippetHashMap.has(hashCodeSnippet);
 

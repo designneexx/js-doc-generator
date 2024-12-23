@@ -1,23 +1,13 @@
+import type { FileCacheHashMetadata, FileNodeSourceCode } from 'core/types/common';
 import sha1 from 'crypto-js/sha1.js';
-import type { ASTJSDocableNode, FileCacheHashMetadata } from 'core/types/common';
-import { SourceFile } from 'ts-morph';
 import { FileCacheManagerMap } from '../FileCacheManagerMap';
 
 /**
  * Параметры для получения кэша из узла исходного файла.
  * @template CurrentNode - Текущий узел, который должен быть ASTJSDocableNode или его наследником.
  */
-interface GetCacheFromNodeSourceFileParams<
-    CurrentNode extends ASTJSDocableNode = ASTJSDocableNode
-> {
-    /**
-     * Исходный файл, из которого нужно получить кэш.
-     */
-    sourceFile: SourceFile;
-    /**
-     * Узел, для которого нужно получить кэш.
-     */
-    node: CurrentNode;
+interface GetCacheFromNodeSourceFileParams {
+    fileNodeSourceCode: FileNodeSourceCode;
     /**
      * Карта менеджеров кэша файлов.
      */
@@ -53,11 +43,10 @@ interface GetCacheFromNodeSourceFileReturn {
 export function getCacheFromNodeSourceFile(
     params: GetCacheFromNodeSourceFileParams
 ): GetCacheFromNodeSourceFileReturn {
-    const { sourceFile, node, fileCacheManagerMap } = params;
-    const sourceCode = sourceFile.getFullText();
-    const codeSnippet = node.getFullText();
-    const hashDigestCodeSnippet = sha1(codeSnippet);
-    const hashDigestSourceCode = sha1(sourceCode);
+    const { fileNodeSourceCode, fileCacheManagerMap } = params;
+    const { fileSourceCode, nodeSourceCode } = fileNodeSourceCode;
+    const hashDigestCodeSnippet = sha1(nodeSourceCode);
+    const hashDigestSourceCode = sha1(fileSourceCode);
     const hashCodeSnippet = hashDigestCodeSnippet.toString();
     const hashSourceCode = hashDigestSourceCode.toString();
     const codeSnippetHashMap = fileCacheManagerMap.get(hashSourceCode) || new Map();

@@ -1,26 +1,15 @@
-import { type FileSystemCache } from 'file-system-cache';
 import { FileCacheManagerMap } from 'core/utils/FileCacheManagerMap';
-import {
-    JSDocableNode,
-    SyntaxKind,
-    Node,
-    ts,
-    SourceFile,
-    type ProjectOptions,
-    InterfaceDeclaration,
-    VariableStatement,
-    EnumDeclaration,
-    FunctionDeclaration,
-    ClassDeclaration,
-    TypeAliasDeclaration
-} from 'ts-morph';
-import winston from 'winston';
+import { type FileSystemCache } from 'file-system-cache';
+import { JSDocableNode, SyntaxKind, Node, ts, SourceFile, type ProjectOptions } from 'ts-morph';
 
 /**
  * Опции для кэша файловой системы.
  * Этот тип представляет собой набор опций, которые могут быть переданы в конструктор класса FileSystemCache.
  */
-type FileSystemCacheOptions = Exclude<ConstructorParameters<typeof FileSystemCache>[number], undefined>;
+type FileSystemCacheOptions = Exclude<
+    ConstructorParameters<typeof FileSystemCache>[number],
+    undefined
+>;
 
 /**
  * Тип KindVariants представляет собой строку, которая должна быть одним из вариантов перечисления SyntaxKind или ключом этого перечисления.
@@ -241,22 +230,12 @@ export interface GetJSDocableCodeSnippetParams<
 /**
  * Параметры инициализации фабрики JSDoc.
  */
-export interface InitJSDocFactoryParams<
-    CurrentNode extends ASTJSDocableNode = ASTJSDocableNode,
-    Response = unknown
-> {
+export interface InitJSDocFactoryParams<Kind extends KindDeclarationNames> {
     /**
      * Вид узла AST, для которого применяется JSDoc.
      * Это значение возвращается методом `getKindName` узла.
      */
-    kind: ReturnType<CurrentNode['getKindName']>;
-    /**
-     * Функция для применения JSDoc к узлу AST.
-     *
-     * @param params - Параметры, необходимые для применения JSDoc к узлу.
-     * @returns Результат применения JSDoc, тип которого определяется параметром Response.
-     */
-    applyJSDoc?(params: ApplyJSDocParams<CurrentNode>): Response;
+    kind: Kind;
     /**
      * Получает фрагмент кода, к которому можно применить JSDoc.
      *
@@ -304,7 +283,7 @@ export type IsNodeInCache = <CurrentNode extends ASTJSDocableNode>(
  * @template CurrentNode - Тип узла AST, к которому будет применяться JSDoc.
  * @template CurrentAIServiceOptions - Тип опций сервиса искусственного интеллекта.
  */
-export interface PrepareAndApplyJSDoc<
+export interface SetJSDocToNodeParams<
     CurrentNode extends ASTJSDocableNode = ASTJSDocableNode,
     CurrentAIServiceOptions extends AIServiceOptions = AIServiceOptions
 > {
@@ -348,32 +327,6 @@ export interface PrepareAndApplyJSDoc<
      * который используется для автоматической генерации JSDoc комментариев.
      */
     aiServiceOptions: CurrentAIServiceOptions;
-
-    /**
-     * Карта менеджеров кэша файлов.
-     *
-     * @description
-     * Эта карта содержит менеджеры кэша файлов для управления кэшированием различных файлов
-     * и обеспечения быстрого доступа к ним при необходимости.
-     */
-    fileCacheManagerMap: FileCacheManagerMap;
-
-    /**
-     * Проверяет, находится ли узел в кэше.
-     *
-     * @param params - Параметры для проверки наличия узла в кэше.
-     * @returns Возвращает true, если узел находится в кэше, в противном случае - false.
-     */
-    isNodeInCache(params: IsNodeInCacheParams): boolean;
-
-    /**
-     * Логгер для записи информационных сообщений.
-     *
-     * @description
-     * Этот логгер предназначен для записи различных информационных сообщений и отладочной информации
-     * в процессе работы с JSDoc и другими компонентами системы.
-     */
-    logger: winston.Logger;
 }
 
 /**
@@ -557,153 +510,17 @@ export type ExtractedDeclaration<
     nodes: CurrentNode[];
 };
 
-/**
- * Преобразует кортеж в массив объединения типов
- * @template T - кортеж, который нужно преобразовать
- */
-export type TupleToUnionArray<T extends unknown[]> = T[number][];
-
-/**
- * Объявление типа, представляющее извлеченный интерфейс
- * @template K - тип значения, представляющий имя объявления
- * @template T - тип значения, представляющий интерфейсное объявление
- */
-export type ExtractedInterfaceDeclaration = ExtractedDeclaration<
-    KindDeclarationNames.InterfaceDeclaration,
-    InterfaceDeclaration
->;
-
-/**
- * Тип, представляющий извлеченное выражение переменной.
- */
-export type ExtractedVariableStatement = ExtractedDeclaration<
-    KindDeclarationNames.VariableStatement,
-    VariableStatement
->;
-
-/**
- * Тип, представляющий извлеченное объявление перечисления
- * @template TKind - тип значения, указывающий на вид объявления
- * @template TDeclaration - тип объявления перечисления
- */
-export type ExtractedEnumDeclaration = ExtractedDeclaration<
-    KindDeclarationNames.EnumDeclaration,
-    EnumDeclaration
->;
-
-/**
- * Тип, представляющий извлеченное объявление функции.
- */
-export type ExtractedFunctionDeclaration = ExtractedDeclaration<
-    KindDeclarationNames.FunctionDeclaration,
-    FunctionDeclaration
->;
-
-/**
- * Тип данных, представляющий извлеченное объявление класса.
- * @template K - тип значения, представляющий вид объявления
- * @template T - тип данных, представляющий объявление класса
- */
-export type ExtractedClassDeclaration = ExtractedDeclaration<
-    KindDeclarationNames.ClassDeclaration,
-    ClassDeclaration
->;
-
-/**
- * Объявление типа, извлеченное из исходного кода
- */
-export type ExtractedTypeAliasDeclaration = ExtractedDeclaration<
-    KindDeclarationNames.TypeAliasDeclaration,
-    TypeAliasDeclaration
->;
-
-export type ExtractedDeclarationsTuple = [
-    ExtractedClassDeclaration,
-    ExtractedInterfaceDeclaration,
-    ExtractedEnumDeclaration,
-    ExtractedFunctionDeclaration,
-    ExtractedVariableStatement,
-    ExtractedTypeAliasDeclaration
-];
-
-/**
- * Тип ExtractedDeclarations представляет собой объединение всех типов, содержащихся в TupleToUnionArray.
- */
-export type ExtractedDeclarations = TupleToUnionArray<ExtractedDeclarationsTuple>;
-
-/**
- * Реестр объявлений с возможностью добавления JSDoc.
- */
-export interface JSDocableDeclarationRegistry {
-    /**
-     * Объявление класса.
-     */
-    [KindDeclarationNames.ClassDeclaration]: ClassDeclaration;
-    /**
-     * Объявление перечисления.
-     */
-    [KindDeclarationNames.EnumDeclaration]: EnumDeclaration;
-    /**
-     * Объявление интерфейса.
-     */
-    [KindDeclarationNames.InterfaceDeclaration]: InterfaceDeclaration;
-    /**
-     * Объявление функции.
-     */
-    [KindDeclarationNames.FunctionDeclaration]: FunctionDeclaration;
-    /**
-     * Объявление переменной.
-     */
-    [KindDeclarationNames.VariableStatement]: VariableStatement;
-    /**
-     * Объявление псевдонима типа.
-     */
-    [KindDeclarationNames.TypeAliasDeclaration]: TypeAliasDeclaration;
+export interface JSDocNodeSetter<Kind extends KindDeclarationNames = KindDeclarationNames> {
+    kind: Kind;
+    setJSDocToNode<
+        CurrentNode extends ASTJSDocableNode,
+        CurrentAIServiceOptions extends AIServiceOptions
+    >(
+        params: SetJSDocToNodeParams<CurrentNode, CurrentAIServiceOptions>
+    ): Promise<FileNodeSourceCode>;
 }
 
-/**
- * Реестр провайдеров JSDoc, которые ассоциированы с определениями, поддерживающими JSDoc.
- */
-export type JSDocProviderRegistry = {
-    [key in keyof JSDocableDeclarationRegistry]: (
-        node: JSDocableDeclarationRegistry[key]
-    ) => Promise<boolean>;
-};
-
-/**
- * Тип CreateJSDoc представляет собой функцию, которая принимает prepareParams и возвращает Promise<boolean>.
- * @template CurrentNode - тип узла AST, который имеет JSDoc
- * @template CurrentAIServiceOptions - тип параметров службы AI
- * @param prepareParams - функция подготовки и применения JSDoc к узлу AST
- * @returns Promise<boolean> - промис с булевым значением
- */
-export type CreateJSDoc<CurrentNode extends ASTJSDocableNode = ASTJSDocableNode> = <
-    CurrentAIServiceOptions extends AIServiceOptions
->(
-    prepareParams: PrepareAndApplyJSDoc<CurrentNode, CurrentAIServiceOptions>
-) => Promise<boolean>;
-
-/**
- * Represents a type that makes all properties of the original type optional recursively.
- * @template T - The original type to make partial.
- */
-export type DeepPartial<T> = T extends object ? { [P in keyof T]?: DeepPartial<T[P]> } : T;
-
-/**
- * Обобщенный тип DefaultModule, представляющий модуль по умолчанию.
- * @template DefaultModule - Тип модуля по умолчанию.
- * @template Module - Тип модуля, который должен содержать все поля типа DefaultModule и не содержать поле default.
- */
-export type DefaultModule<
-    DefaultModule = unknown,
-    Module extends (Record<string, unknown> & {default: never}) = Record<string, unknown> & {default: never & void}
-> = Module & {
-    /**
-     * Поле default, представляющее модуль по умолчанию.
-     * @type {Module & { default: DefaultModule }}
-     */
-    default: Module & {
-        default: DefaultModule;
-    };
-};
-
+export interface FileNodeSourceCode {
+    fileSourceCode: string;
+    nodeSourceCode: string;
+}

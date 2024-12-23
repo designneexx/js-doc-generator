@@ -1,5 +1,4 @@
-import { type CreateJSDoc } from 'core/types/common';
-import { FunctionDeclaration } from 'ts-morph';
+import { JSDocNodeSetter, KindDeclarationNames } from 'core/types/common';
 import { initJSDocFactory } from '../helpers/initJSDocFactory';
 
 /**
@@ -10,9 +9,9 @@ import { initJSDocFactory } from '../helpers/initJSDocFactory';
  * @param {AIServiceOptions} params.aiServiceOptions - Опции для AI-сервиса.
  * @returns {string} - Сгенерированный JSDoc для FunctionDeclaration.
  */
-export const createJSDocFunction: CreateJSDoc<FunctionDeclaration> =
-    initJSDocFactory<FunctionDeclaration>({
-        kind: 'FunctionDeclaration',
+export const jsDocFunctionSetter: JSDocNodeSetter<KindDeclarationNames.FunctionDeclaration> =
+    initJSDocFactory({
+        kind: KindDeclarationNames.FunctionDeclaration,
         /**
          * Асинхронная функция для получения фрагмента кода, подлежащего JSDoc.
          * @param {JSDocableCodeSnippetParams} params - Параметры для генерации JSDoc.

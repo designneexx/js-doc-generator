@@ -1,9 +1,9 @@
-import type { JSDocStructure, JSDocTagStructure, OptionalKind } from 'ts-morph';
 import {
     type ApplyJSDocParams,
     type ASTJSDocableNode,
     InsertModeJSDocTypes
 } from 'core/types/common';
+import type { JSDocStructure, JSDocTagStructure, OptionalKind } from 'ts-morph';
 import { getAllJSDocableNodesFlatFactory } from './getAllJSDocableNodesFlatFactory';
 import { getJSDocStructure } from './getJSDocStructure';
 import { removeJSDoc } from './removeJSDoc';
