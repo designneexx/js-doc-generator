@@ -1,6 +1,6 @@
 {
-    "version": "1.1.8",
-    "name": "@auto-js-doc-generator/core",
+    "name": "@auto-js-doc-generator/cli",
+    "version": "1.0.0",
     "scripts": {
         "lint:check": "eslint src",
         "lint:write": "eslint src --fix",
@@ -11,6 +11,7 @@
         "postcommit": "npm run changelog"
     },
     "keywords": [
+        "cli",
         "auto",
         "auto documentation",
         "typescript",
@@ -29,6 +30,9 @@
         ".": "./dist/index.js"
     },
     "types": "dist",
+    "bin": {
+        "auto-js-doc-gen": "dist/index.js"
+    },
     "license": "ISC",
     "description": "Позволяет автоматически генерировать документацию JSDoc к вашему коду на typescript",
     "files": [
@@ -38,20 +42,12 @@
     "commitizen": {
         "path": "cz-conventional-changelog"
     },
-    "devDependencies": {
-        "@types/chalk": "^0.4.31",
-        "@types/crypto-js": "^4.2.2",
-        "@types/glob": "^8.1.0",
-        "@types/uuid": "^10.0.0",
-        "esbuild": "^0.24.2"
-    },
     "dependencies": {
         "chalk": "^5.4.1",
-        "crypto-js": "^4.2.0",
-        "file-system-cache": "^3.0.0-alpha.8",
-        "glob": "^11.0.0",
-        "ts-morph": "^24.0.0",
-        "uuid": "^11.0.3"
+        "commander": "^12.1.0",
+        "winston": "^3.17.0"
     },
-    "gitHead": "1736943513de144889851a625c5e6fe557d68fc2"
+    "peerDependencies": {
+      "@auto-js-doc-generator/core": "1.1.8"
+    }
 }

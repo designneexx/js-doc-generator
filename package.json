@@ -24,7 +24,8 @@
   ],
   "private": false,
   "workspaces": [
-    "packages/core"
+    "packages/core",
+    "packages/cli"
   ],
   "publishConfig": {
     "access": "public",
@@ -38,7 +39,6 @@
   ],
   "repository": "github:designneexx/js-doc-generator",
   "devDependencies": {
-    "@auto-js-doc-generator/core": "^1.1.2",
     "@eslint/eslintrc": "^3.1.0",
     "@eslint/js": "^9.13.0",
     "@types/eslint": "^9.6.1",
