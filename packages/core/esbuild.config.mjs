@@ -5,7 +5,7 @@ await esbuild.build({
     entryPoints: ['src/index.ts'],
     bundle: true,
     platform: 'node',
-    external: ['esbuild', 'ts-morph'],
+    external: ['esbuild', 'ts-morph', 'glob'],
     outdir: 'dist',
     tsconfig: 'tsconfig.json',
     plugins: [

@@ -9,7 +9,8 @@
     "postcommit": "npm run changelog",
     "lerna:pack": "lerna run pack",
     "lerna:build": "lerna run build",
-    "publish": "npm run lerna:build && lerna publish --no-private",
+    "publish": "lerna publish --no-private",
+    "autp:publish": "npm run lerna:build && lerna publish --no-private",
     "gen": "auto-js-doc-gen generate"
   },
   "keywords": [
