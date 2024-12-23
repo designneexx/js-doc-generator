@@ -7,7 +7,7 @@ import { initJSDocFactory } from '../helpers/initJSDocFactory';
  * @param {InitJSDocFactoryParams} initParams - Параметры инициализации фабричной функции.
  * @returns {JSDocVariableStatement} Возвращает переменную с JSDoc комментариями.
  */
-export const JSDocVariableStatementSetter: JSDocNodeSetter<KindDeclarationNames.VariableStatement> =
+export const jsDocVariableStatementSetter: JSDocNodeSetter<KindDeclarationNames.VariableStatement> =
     initJSDocFactory({
         kind: KindDeclarationNames.VariableStatement,
         /**

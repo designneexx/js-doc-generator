@@ -517,7 +517,7 @@ export interface JSDocNodeSetter<Kind extends KindDeclarationNames = KindDeclara
         CurrentAIServiceOptions extends AIServiceOptions
     >(
         params: SetJSDocToNodeParams<CurrentNode, CurrentAIServiceOptions>
-    ): Promise<FileNodeSourceCode>;
+    ): Promise<void>;
 }
 
 export interface FileNodeSourceCode {

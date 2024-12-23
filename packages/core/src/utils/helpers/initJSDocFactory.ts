@@ -35,7 +35,7 @@ export function initJSDocFactory<Kind extends KindDeclarationNames>(
             CurrentAIServiceOptions extends AIServiceOptions
         >(
             params: SetJSDocToNodeParams<CurrentNode, CurrentAIServiceOptions>
-        ): Promise<FileNodeSourceCode> {
+        ): Promise<void> {
             const { jsDocGeneratorService, node, jsDocOptions, sourceFile, aiServiceOptions } =
                 params;
 
@@ -67,11 +67,6 @@ export function initJSDocFactory<Kind extends KindDeclarationNames>(
              * @param {JSDocOptions} jsDocOptions - Опции JSDoc.
              */
             applyJSDoc({ node, jsDocs, jsDocOptions });
-
-            return {
-                fileSourceCode: sourceFile.getFullText(),
-                nodeSourceCode: node.getFullText()
-            };
         }
     };
 }

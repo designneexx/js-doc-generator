@@ -4,12 +4,12 @@ import { FileNodeSourceCode, type AIServiceOptions, type InitParams } from '../t
 import { createFileCacheManagerMap } from './helpers/createFileCacheManagerMap';
 import { isNodeInCache } from './helpers/isNodeInCache';
 import { saveJSDocProcessedInCache } from './helpers/saveJSDocsProcessedInCache';
-import { jsDocClassSetter } from './nodes/createJSDocClass';
-import { jsDocEnumSetter } from './nodes/createJSDocEnum';
-import { jsDocFunctionSetter } from './nodes/createJSDocFunction';
-import { jsDocInterfaceSetter } from './nodes/createJSDocInterface';
-import { jsDocTypeAliasSetter } from './nodes/createJSDocTypeAlias';
-import { JSDocVariableStatementSetter } from './nodes/createJSDocVariableStatement';
+import { jsDocClassSetter } from './nodes/jsDocClassSetter';
+import { jsDocEnumSetter } from './nodes/jsDocEnumSetter';
+import { jsDocFunctionSetter } from './nodes/jsDocFunctionSetter';
+import { jsDocInterfaceSetter } from './nodes/jsDocInterfaceSetter';
+import { jsDocTypeAliasSetter } from './nodes/jsDocTypeAliasSetter';
+import { jsDocVariableStatementSetter } from './nodes/jsDocVariableStatementSetter';
 
 /**
  * Инициализирует процесс генерации JSDoc комментариев для заданных исходных файлов проекта.
@@ -58,7 +58,7 @@ export async function init<CurrentAIServiceOptions extends AIServiceOptions>(
         jsDocFunctionSetter,
         jsDocEnumSetter,
         jsDocTypeAliasSetter,
-        JSDocVariableStatementSetter
+        jsDocVariableStatementSetter
     ];
 
     const allowedJsDocNodeSetterList = jsDocNodeSetterList.filter(
@@ -72,6 +72,8 @@ export async function init<CurrentAIServiceOptions extends AIServiceOptions>(
 
             return nodes.reduce((acc, node) => {
                 const hasCached = isNodeInCache({ node, fileCacheManagerMap, sourceFile });
+
+                console.log('hasCached', hasCached);
 
                 if (hasCached) {
                     return acc;
@@ -101,13 +103,29 @@ export async function init<CurrentAIServiceOptions extends AIServiceOptions>(
                 );
 
                 return acc;
-            }, [] as Promise<FileNodeSourceCode>[]);
+            }, [] as Promise<void>[]);
         });
     });
 
-    const fileNodeSourceCodeList = await Promise.all(jsDocNodePromises);
+    await Promise.all(jsDocNodePromises);
 
     await project.save();
+
+    const fileNodeSourceCodeList = sourceFiles.flatMap((sourceFile) => {
+        return allowedJsDocNodeSetterList.flatMap((jsDocNodeSetter) => {
+            const { kind } = jsDocNodeSetter;
+            const nodes = sourceFile.getChildrenOfKind(SyntaxKind[kind]);
+
+            return nodes.reduce((acc, node) => {
+                acc.push({
+                    fileSourceCode: sourceFile.getFullText(),
+                    nodeSourceCode: node.getFullText()
+                });
+
+                return acc;
+            }, [] as FileNodeSourceCode[]);
+        });
+    });
 
     await saveJSDocProcessedInCache({
         cache,
