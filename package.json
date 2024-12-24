@@ -25,7 +25,8 @@
   "private": false,
   "workspaces": [
     "packages/core",
-    "packages/cli"
+    "packages/cli",
+    "packages/client"
   ],
   "publishConfig": {
     "access": "public",

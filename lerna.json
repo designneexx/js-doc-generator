@@ -1,7 +1,8 @@
 {
     "packages": [
         "packages/core",
-        "packages/cli"
+        "packages/cli",
+        "packages/client"
     ],
     "version": "independent",
     "npmClient": "npm",

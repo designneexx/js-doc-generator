@@ -48,5 +48,6 @@
         "commander": "^12.1.0",
         "esbuild": "^0.24.2",
         "winston": "^3.17.0"
-    }
+    },
+    "gitHead": "8247b7dff3c0c2172ded8ba5da915b16f26a4933"
 }
