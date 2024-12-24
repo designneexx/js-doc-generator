@@ -11,10 +11,22 @@ import { getCacheFromNodeSourceFile } from './getCacheFromNodeSourceFile';
  */
 export function isNodeInCache(nodeCacheParams: IsNodeInCacheParams): boolean {
     const { node, fileCacheManagerMap, sourceFile } = nodeCacheParams;
+    /**
+     * Информация о коде файла и узла.
+     * @typedef {Object} FileNodeSourceCode
+     * @property {string} fileSourceCode - Полный текст исходного файла.
+     * @property {string} nodeSourceCode - Полный текст узла.
+     */
     const fileNodeSourceCode: FileNodeSourceCode = {
         fileSourceCode: sourceFile.getFullText(),
         nodeSourceCode: node.getFullText()
     };
+    /**
+     * Данные, полученные из кэша на основе исходного кода файла и узла.
+     * @typedef {Object} CacheData
+     * @property {Map<string, string>} codeSnippetHashMap - Хэш-карта кодовых фрагментов.
+     * @property {string} hashCodeSnippet - Хэш-код текущего фрагмента кода.
+     */
     const data = getCacheFromNodeSourceFile({ fileNodeSourceCode, fileCacheManagerMap });
     const { codeSnippetHashMap, hashCodeSnippet } = data;
     const isIdentityCache = codeSnippetHashMap.has(hashCodeSnippet);

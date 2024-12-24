@@ -12,6 +12,14 @@ import { initJSDocFactory } from '../helpers/initJSDocFactory';
 export const jsDocTypeAliasSetter: JSDocNodeSetter<KindDeclarationNames.TypeAliasDeclaration> =
     initJSDocFactory({
         kind: KindDeclarationNames.TypeAliasDeclaration,
+        /**
+         * Retrieves the JSDocable code snippet for TypeAliasDeclaration nodes.
+         * @param {JSDocNodeSetterParams} params - Parameters for retrieving JSDocable code snippet.
+         * @param {JSDocGeneratorService} params.jsDocGeneratorService - JSDoc generator service.
+         * @param {JSDocGeneratorServiceOptions} params.jsDocGeneratorServiceOptions - Options for JSDoc generator service.
+         * @param {AiServiceOptions} params.aiServiceOptions - Options for AI service.
+         * @returns {string} - JSDoc for TypeAliasDeclaration node.
+         */
         async getJSDocableCodeSnippet(params) {
             const { jsDocGeneratorService, jsDocGeneratorServiceOptions, aiServiceOptions } =
                 params;

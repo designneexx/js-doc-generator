@@ -7,6 +7,9 @@ import { getCacheFromNodeSourceFile } from './getCacheFromNodeSourceFile';
  * Параметры для сохранения обработанных JSDoc в кэше
  */
 interface SaveJSDocProcessedInCacheParams {
+    /**
+     * Список исходных кодов узлов файлов, содержащих JSDoc
+     */
     fileNodeSourceCodeList: FileNodeSourceCode[];
     /**
      * Кэш, в который нужно сохранить обработанные JSDoc

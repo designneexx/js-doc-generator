@@ -23,6 +23,10 @@ export type KindVariants = `${SyntaxKind}` | keyof typeof SyntaxKind | SyntaxKin
  */
 export type ASTJSDocableNode = JSDocableNode & Node<ts.Node>;
 
+/**
+ * Опции сервиса искусственного интеллекта.
+ * Этот тип представляет собой объект, где ключи являются строками, а значения - любого типа.
+ */
 export type AIServiceOptions = Record<string, unknown>;
 
 /**
@@ -510,8 +514,22 @@ export type ExtractedDeclaration<
     nodes: CurrentNode[];
 };
 
+/**
+ * Интерфейс JSDocNodeSetter представляет собой обобщенный тип, который определяет метод установки JSDoc к узлу AST.
+ * @template Kind - Тип декларации узла.
+ */
 export interface JSDocNodeSetter<Kind extends KindDeclarationNames = KindDeclarationNames> {
+    /**
+     * Тип декларации узла.
+     */
     kind: Kind;
+    /**
+     * Устанавливает JSDoc к указанному узлу AST.
+     * @template CurrentNode - Текущий узел AST, который поддерживает JSDoc.
+     * @template CurrentAIServiceOptions - Опции сервиса искусственного интеллекта для текущего узла.
+     * @param {SetJSDocToNodeParams<CurrentNode, CurrentAIServiceOptions>} params - Параметры для установки JSDoc.
+     * @returns {Promise<void>} - Промис, который разрешается после установки JSDoc.
+     */
     setJSDocToNode<
         CurrentNode extends ASTJSDocableNode,
         CurrentAIServiceOptions extends AIServiceOptions
@@ -520,7 +538,16 @@ export interface JSDocNodeSetter<Kind extends KindDeclarationNames = KindDeclara
     ): Promise<void>;
 }
 
+/**
+ * Интерфейс, представляющий исходный код файла и исходный код узла
+ */
 export interface FileNodeSourceCode {
+    /**
+     * Исходный код файла
+     */
     fileSourceCode: string;
+    /**
+     * Исходный код узла
+     */
     nodeSourceCode: string;
 }

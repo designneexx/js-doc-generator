@@ -7,6 +7,10 @@ import {
 } from '@auto-js-doc-generator/core';
 import { loadConfig } from './loadConfigFile';
 
+/**
+ * Represents a type that makes all properties of the original type optional recursively.
+ * @template T - The original type to make partial.
+ */
 export type DeepPartial<T> = T extends object ? { [P in keyof T]?: DeepPartial<T[P]> } : T;
 
 /**

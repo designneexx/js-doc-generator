@@ -30,6 +30,13 @@ export function initJSDocFactory<Kind extends KindDeclarationNames>(
 
     return {
         kind,
+        /**
+         * Устанавливает JSDoc для узла AST.
+         * @template CurrentNode - Текущий узел AST.
+         * @template CurrentAIServiceOptions - Опции сервиса AI.
+         * @param {SetJSDocToNodeParams<CurrentNode, CurrentAIServiceOptions>} params - Параметры установки JSDoc.
+         * @returns {Promise<void>} - Промис, завершающийся после установки JSDoc.
+         */
         async setJSDocToNode<
             CurrentNode extends ASTJSDocableNode,
             CurrentAIServiceOptions extends AIServiceOptions

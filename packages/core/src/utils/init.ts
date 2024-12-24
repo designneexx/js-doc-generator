@@ -36,6 +36,9 @@ export async function init<CurrentAIServiceOptions extends AIServiceOptions>(
         cacheDir = './.cache',
         cacheOptions
     } = params;
+    /**
+     * Создает новый объект кэша для хранения кэшированных данных.
+     */
     const cache = new Cache({
         basePath: cacheDir, // (optional) Path where cache files are stored (default).
         ns: 'jsdocgen', // (optional) A grouping namespace for items.
@@ -43,8 +46,14 @@ export async function init<CurrentAIServiceOptions extends AIServiceOptions>(
         ...cacheOptions
     });
 
+    /**
+     * Создает новый объект проекта TypeScript.
+     */
     const project = new Project({ ...projectOptions, skipAddingFilesFromTsConfig: true });
 
+    /**
+     * Создает карту менеджеров кэша для файлов.
+     */
     const fileCacheManagerMap = await createFileCacheManagerMap(cache);
 
     const kinds = globalGenerationOptions?.kinds || [];
@@ -61,6 +70,9 @@ export async function init<CurrentAIServiceOptions extends AIServiceOptions>(
         jsDocVariableStatementSetter
     ];
 
+    /**
+     * Фильтрует список функций установки JSDoc комментариев в соответствии с указанными видами узлов.
+     */
     const allowedJsDocNodeSetterList = jsDocNodeSetterList.filter(
         (item) => kinds.length === 0 || kinds.includes(item.kind)
     );
@@ -127,6 +139,9 @@ export async function init<CurrentAIServiceOptions extends AIServiceOptions>(
         });
     });
 
+    /**
+     * Сохраняет обработанные JSDoc комментарии в кэше.
+     */
     await saveJSDocProcessedInCache({
         cache,
         fileNodeSourceCodeList

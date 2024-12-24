@@ -7,6 +7,9 @@ import { FileCacheManagerMap } from '../FileCacheManagerMap';
  * @template CurrentNode - Текущий узел, который должен быть ASTJSDocableNode или его наследником.
  */
 interface GetCacheFromNodeSourceFileParams {
+    /**
+     * Код исходного файла узла.
+     */
     fileNodeSourceCode: FileNodeSourceCode;
     /**
      * Карта менеджеров кэша файлов.

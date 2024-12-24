@@ -12,6 +12,14 @@ import { initJSDocFactory } from '../helpers/initJSDocFactory';
 export const jsDocInterfaceSetter: JSDocNodeSetter<KindDeclarationNames.InterfaceDeclaration> =
     initJSDocFactory({
         kind: KindDeclarationNames.InterfaceDeclaration,
+        /**
+         * Retrieves JSDoc-able code snippet for InterfaceDeclaration kind.
+         * @param {JSDocableCodeSnippetParams} params - Parameters for generating JSDoc.
+         * @param {JSDocGeneratorService} params.jsDocGeneratorService - JSDoc generator service.
+         * @param {JSDocGeneratorServiceOptions} params.jsDocGeneratorServiceOptions - Options for JSDoc generator service.
+         * @param {AIServiceOptions} params.aiServiceOptions - Options for AI service.
+         * @returns {string} - JSDoc-able code snippet for InterfaceDeclaration kind.
+         */
         async getJSDocableCodeSnippet(params) {
             const { jsDocGeneratorService, jsDocGeneratorServiceOptions, aiServiceOptions } =
                 params;
