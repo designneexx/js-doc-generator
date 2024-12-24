@@ -21,6 +21,9 @@ export const jsDocInterfaceSetter: JSDocNodeSetter<KindDeclarationNames.Interfac
          * @returns {string} - JSDoc-able code snippet for InterfaceDeclaration kind.
          */
         async getJSDocableCodeSnippet(params) {
+            /**
+             * Destructuring parameters.
+             */
             const { jsDocGeneratorService, jsDocGeneratorServiceOptions, aiServiceOptions } =
                 params;
 

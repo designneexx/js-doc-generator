@@ -5,6 +5,11 @@ import {
 } from '@auto-js-doc-generator/core';
 import axios from 'axios';
 
+/**
+ * Функция для создания сервиса генерации JSDoc комментариев.
+ * @param {string} [baseURL] - Базовый URL для HTTP-клиента, если не передан, то используется значение из переменной окружения JS_DOC_GENERATOR_SERVICE
+ * @returns {JSDocGeneratorService} - Возвращает объект сервиса генерации JSDoc комментариев
+ */
 export function createJSDocGeneratorService(baseURL?: string): JSDocGeneratorService {
     /**
      * HTTP-клиент для выполнения запросов на сервер
