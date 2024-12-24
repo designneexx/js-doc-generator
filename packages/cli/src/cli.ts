@@ -1,10 +1,6 @@
+import { type AIServiceOptions, type InitParams, init } from '@auto-js-doc-generator/core';
 import { Command } from 'commander';
 import packageJSON from '../package.json';
-import {
-    type AIServiceOptions,
-    type InitParams,
-    init
-} from '@auto-js-doc-generator/core';
 import { loadConfig } from './loadConfigFile';
 
 /**
@@ -47,9 +43,19 @@ export function runByCli(): Command {
 
     command
         .command('generate')
-        .option('--cwd', 'Базовая директория для началы работы генерации документации. Библиотека берет от начала этого пути конфигурационный файл и читает tsconfig.json, если конфиг написан на TS')
-        .option('--tsconfig', 'Путь до конфига TypeScript, если конфигурационный файл написан на TS. По умолчанию tsconfig.json')
-        .option('--config', 'Путь до файла конфигурации. По умолчанию jsdocgen.config.{js,cjs,mjs,ts,cts,mts}', '')
+        .option(
+            '--cwd',
+            'Базовая директория для началы работы генерации документации. Библиотека берет от начала этого пути конфигурационный файл и читает tsconfig.json, если конфиг написан на TS'
+        )
+        .option(
+            '--tsconfig',
+            'Путь до конфига TypeScript, если конфигурационный файл написан на TS. По умолчанию tsconfig.json'
+        )
+        .option(
+            '--config',
+            'Путь до файла конфигурации. По умолчанию jsdocgen.config.{js,cjs,mjs,ts,cts,mts}',
+            ''
+        )
         .action(async (_arg, options) => {
             /**
              * @typedef {Object} ConfigParams
@@ -60,7 +66,7 @@ export function runByCli(): Command {
             const parsedOptions: ConfigParams = options;
             const { cwd, tsConfig, config } = parsedOptions;
 
-            await start({cwd, tsConfig, config});
+            await start({ cwd, tsConfig, config });
         });
 
     return command;
@@ -79,7 +85,7 @@ export async function start<CurrentAIServiceOptions extends AIServiceOptions>(
     overrideConfig?: DeepPartial<InitParams<CurrentAIServiceOptions>>
 ): Promise<void> {
     try {
-        const config = await loadConfig<CurrentAIServiceOptions>({...configParams});
+        const config = await loadConfig<CurrentAIServiceOptions>({ ...configParams });
 
         await init({
             ...config,
@@ -89,9 +95,12 @@ export async function start<CurrentAIServiceOptions extends AIServiceOptions>(
                 ...overrideConfig?.globalGenerationOptions
             }
         } as InitParams<CurrentAIServiceOptions>);
-    } catch(e) {
+    } catch (e) {
         const err = e as Error;
-        console.log('Не удалось прочитать файл конфигурации или запустить генерацию js doc. Подробнее об ошибке: ', err.message);
+        console.log(
+            'Не удалось прочитать файл конфигурации или запустить генерацию js doc. Подробнее об ошибке: ',
+            err.message
+        );
         process.exit(1);
     }
 }

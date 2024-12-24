@@ -1,5 +1,5 @@
-import { Cache } from 'file-system-cache';
 import { type FileCacheHashMetadata } from 'core/types/common';
+import { Cache } from 'file-system-cache';
 import { FileCacheManagerMap } from '../FileCacheManagerMap';
 
 /**

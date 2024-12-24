@@ -49,7 +49,7 @@ export interface LoadConfigParams {
 export function findConfigFile(cwd: string = process.cwd(), jsDocGenConfig = ''): string {
     if (jsDocGenConfig) {
         const resolvedPath = path.resolve(cwd, jsDocGenConfig);
-        
+
         if (existsSync(resolvedPath)) {
             return resolvedPath;
         }

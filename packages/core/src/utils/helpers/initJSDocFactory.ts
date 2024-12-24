@@ -4,8 +4,7 @@ import type {
     InitJSDocFactoryParams,
     JSDocNodeSetter,
     KindDeclarationNames,
-    SetJSDocToNodeParams,
-    FileNodeSourceCode
+    SetJSDocToNodeParams
 } from 'core/types/common';
 import { Project } from 'ts-morph';
 import { applyJSDoc } from './applyJSDoc';
@@ -40,9 +39,7 @@ export function initJSDocFactory<Kind extends KindDeclarationNames>(
         async setJSDocToNode<
             CurrentNode extends ASTJSDocableNode,
             CurrentAIServiceOptions extends AIServiceOptions
-        >(
-            params: SetJSDocToNodeParams<CurrentNode, CurrentAIServiceOptions>
-        ): Promise<void> {
+        >(params: SetJSDocToNodeParams<CurrentNode, CurrentAIServiceOptions>): Promise<void> {
             const { jsDocGeneratorService, node, jsDocOptions, sourceFile, aiServiceOptions } =
                 params;
 

@@ -7,13 +7,7 @@ await esbuild.build({
     platform: 'node',
     outdir: 'dist',
     tsconfig: 'tsconfig.json',
-    external: [
-        'esbuild',
-        '@auto-js-doc-generator/core',
-        '@auto-js-doc-generator/cli',
-        '@auto-js-doc-generator/client',
-        'auto-js-doc-generator'
-    ],
+    external: ['@auto-js-doc-generator/core', 'auto-js-doc-generator', 'axios'],
     plugins: [
         {
             name: 'TypeScriptDeclarationsPlugin',

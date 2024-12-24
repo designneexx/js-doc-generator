@@ -10,6 +10,9 @@ const compat = new FlatCompat({
 });
 
 const config = tseslint.config(
+    {
+        ignores: ["node_modules", "packages/*/node_modules", "packages/*/dist"]
+    },
     js.configs.recommended,
     ...tseslint.configs.recommended,
     ...compat.config({

@@ -2,8 +2,8 @@
   "name": "auto-js-doc-generator",
   "version": "1.0.25",
   "scripts": {
-    "lint:check": "eslint src \"src/**/*.{ts,tsx}\"",
-    "lint:write": "eslint src \"src/**/*.{ts,tsx}\" --fix",
+    "lint:check": "eslint packages \"packages/**/*.{ts,tsx}\"",
+    "lint:write": "eslint packages \"packages/**/*.{ts,tsx}\" --fix",
     "commit": "git-cz",
     "changelog": "conventional-changelog -o CHANGELOG.md",
     "postcommit": "npm run changelog",
@@ -58,6 +58,6 @@
     "prettier": "^3.3.3",
     "tsc-alias": "^1.8.10",
     "typescript": "^5.7.2",
-    "typescript-eslint": "^8.12.2"
+    "typescript-eslint": "^8.18.2"
   }
 }
