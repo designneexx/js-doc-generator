@@ -1,8 +1,6 @@
 import 'dotenv/config';
 import axios from 'axios';
 
-console.log('server', process.env.JS_DOC_GENERATOR_SERVICE);
-
 /**
  * HTTP-клиент для выполнения запросов на сервер
  * @type {import("axios").AxiosInstance}

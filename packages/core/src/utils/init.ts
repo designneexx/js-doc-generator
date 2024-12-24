@@ -85,8 +85,6 @@ export async function init<CurrentAIServiceOptions extends AIServiceOptions>(
             return nodes.reduce((acc, node) => {
                 const hasCached = isNodeInCache({ node, fileCacheManagerMap, sourceFile });
 
-                console.log('hasCached', hasCached);
-
                 if (hasCached) {
                     return acc;
                 }
