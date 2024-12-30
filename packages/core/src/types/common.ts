@@ -12,22 +12,10 @@ type FileSystemCacheOptions = Exclude<
 >;
 
 /**
- * Тип KindVariants представляет собой строку, которая должна быть одним из вариантов перечисления SyntaxKind или ключом этого перечисления.
- * @typedef {string} KindVariants
- */
-export type KindVariants = `${SyntaxKind}` | keyof typeof SyntaxKind | SyntaxKind;
-
-/**
  * Тип ASTJSDocableNode представляет узел абстрактного синтаксического дерева (AST),
  * который может содержать JSDoc комментарии.
  */
 export type ASTJSDocableNode = JSDocableNode & Node<ts.Node>;
-
-/**
- * Опции сервиса искусственного интеллекта.
- * Этот тип представляет собой объект, где ключи являются строками, а значения - любого типа.
- */
-export type AIServiceOptions = Record<string, unknown>;
 
 /**
  * Перечисление для определения режима вставки элементов.
@@ -58,7 +46,7 @@ export interface JSDocOptions {
      * Определяет, каким образом будут вставляться JSDoc комментарии.
      * Может принимать значения из перечисления `InsertModeJSDocTypes` или их строковые представления.
      */
-    mode?: InsertModeJSDocTypes | keyof typeof InsertModeJSDocTypes;
+    mode?: keyof typeof InsertModeJSDocTypes;
     /**
      * Глубина вложенности JSDoc комментариев.
      *
@@ -100,70 +88,51 @@ export interface JSDocOptions {
     disabled?: boolean;
 }
 
-/**
- * Тип функции, которая принимает опции для генерации JSDoc и опции для AI-сервиса,
- * и возвращает обещание сгенерированного JSDoc кода в виде строки.
- * @template CurrentAIServiceOptions - текущие опции для AI-сервиса, по умолчанию AIServiceOptions
- * @param {JSDocGeneratorServiceOptions} options - опции для генерации JSDoc
- * @param {CurrentAIServiceOptions} aiServiceOptions - опции для AI-сервиса
- * @returns {Promise<string>} - обещание сгенерированного JSDoc кода в виде строки
- */
-export type CreateJSDocCodeSnippet<
-    CurrentAIServiceOptions extends AIServiceOptions = AIServiceOptions
-> = (
-    options: JSDocGeneratorServiceOptions,
-    aiServiceOptions: CurrentAIServiceOptions
-) => Promise<string>;
+export type CreateJSDocCodeSnippet = (options: JSDocGeneratorServiceOptions) => Promise<string>;
 
-/**
- * Интерфейс JSDocGeneratorService представляет собой сервис для генерации JSDoc комментариев.
- * @template CurrentAIServiceOptions - Обобщенный тип опций для AI-сервиса.
- */
-export interface JSDocGeneratorService<
-    CurrentAIServiceOptions extends AIServiceOptions = AIServiceOptions
-> {
+export interface JSDocGeneratorService {
     /**
      * Метод для создания JSDoc комментария для интерфейса.
      *
      * @param options - Опции для генерации JSDoc комментария.
      * @returns JSDoc комментарий для интерфейса.
      */
-    createJSDocInterface: CreateJSDocCodeSnippet<CurrentAIServiceOptions>;
+    createJSDocInterface: CreateJSDocCodeSnippet;
     /**
      * Метод для создания JSDoc комментария для функции.
      *
      * @param options - Опции для генерации JSDoc комментария.
      * @returns JSDoc комментарий для функции.
      */
-    createJSDocFunction: CreateJSDocCodeSnippet<CurrentAIServiceOptions>;
+    createJSDocFunction: CreateJSDocCodeSnippet;
     /**
      * Метод для создания JSDoc комментария для перечисления.
      *
      * @param options - Опции для генерации JSDoc комментария.
      * @returns JSDoc комментарий для перечисления.
      */
-    createJSDocEnum: CreateJSDocCodeSnippet<CurrentAIServiceOptions>;
+    createJSDocEnum: CreateJSDocCodeSnippet;
     /**
      * Метод для создания JSDoc комментария для псевдонима типа.
      *
      * @param options - Опции для генерации JSDoc комментария.
      * @returns JSDoc комментарий для псевдонима типа.
      */
-    createJSDocTypeAlias: CreateJSDocCodeSnippet<CurrentAIServiceOptions>;
+    createJSDocTypeAlias: CreateJSDocCodeSnippet;
     /**
      * Метод для создания JSDoc комментария для класса.
      *
      * @param options - Опции для генерации JSDoc комментария.
      * @returns JSDoc комментарий для класса.
      */
-    createJSDocClass: CreateJSDocCodeSnippet<CurrentAIServiceOptions>;
+    createJSDocClass: CreateJSDocCodeSnippet;
     /**
      * Метод для создания JSDoc комментария для оператора объявления переменных.
      *
      * @param options - Опции для генерации JSDoc комментария.
      * @returns JSDoc комментарий для оператора объявления переменных.
      */
-    createJSDocVariableStatement: CreateJSDocCodeSnippet<CurrentAIServiceOptions>;
+    createJSDocVariableStatement: CreateJSDocCodeSnippet;
 }
 
 /**
@@ -208,48 +177,23 @@ export interface JSDocGeneratorServiceOptions {
 /**
  * Параметры для получения фрагмента кода, поддерживающего JSDoc.
  */
-export interface GetJSDocableCodeSnippetParams<
-    CurrentAIServiceOptions extends AIServiceOptions = AIServiceOptions
-> {
-    /**
-     * Экземпляр сервиса, отвечающего за генерацию JSDoc комментариев.
-     *
-     * @type {JSDocGeneratorService<CurrentAIServiceOptions>}
-     */
-    jsDocGeneratorService: JSDocGeneratorService<CurrentAIServiceOptions>;
+export interface GetJSDocableCodeSnippetParams {
+    jsDocGeneratorService: JSDocGeneratorService;
     /**
      * Конфигурационные опции для настройки сервиса генерации JSDoc.
      *
      * @type {JSDocGeneratorServiceOptions}
      */
     jsDocGeneratorServiceOptions: JSDocGeneratorServiceOptions;
-    /**
-     * Опции, специфичные для текущего сервиса ИИ, которые могут быть использованы для настройки его поведения.
-     *
-     * @type {CurrentAIServiceOptions}
-     */
-    aiServiceOptions: CurrentAIServiceOptions;
 }
 
-/**
- * Параметры инициализации фабрики JSDoc.
- */
-export interface InitJSDocFactoryParams<Kind extends KindDeclarationNames> {
+export interface createJSDocNodeSetterParams<Kind extends KindDeclarationNames> {
     /**
      * Вид узла AST, для которого применяется JSDoc.
      * Это значение возвращается методом `getKindName` узла.
      */
     kind: Kind;
-    /**
-     * Получает фрагмент кода, к которому можно применить JSDoc.
-     *
-     * @template CurrentAIServiceOptions - Тип опций, используемых текущей службой искусственного интеллекта.
-     * @param params - Параметры, используемые для получения фрагмента кода.
-     * @returns Обещание, которое разрешается в строку с фрагментом кода.
-     */
-    getJSDocableCodeSnippet<CurrentAIServiceOptions extends AIServiceOptions>(
-        params: GetJSDocableCodeSnippetParams<CurrentAIServiceOptions>
-    ): Promise<string>;
+    getJSDocableCodeSnippet(params: GetJSDocableCodeSnippetParams): Promise<string>;
 }
 
 /**
@@ -281,16 +225,7 @@ export type IsNodeInCache = <CurrentNode extends ASTJSDocableNode>(
     params: IsNodeInCacheParams<CurrentNode>
 ) => boolean;
 
-/**
- * Интерфейс для подготовки и применения JSDoc комментариев.
- *
- * @template CurrentNode - Тип узла AST, к которому будет применяться JSDoc.
- * @template CurrentAIServiceOptions - Тип опций сервиса искусственного интеллекта.
- */
-export interface SetJSDocToNodeParams<
-    CurrentNode extends ASTJSDocableNode = ASTJSDocableNode,
-    CurrentAIServiceOptions extends AIServiceOptions = AIServiceOptions
-> {
+export interface SetJSDocToNodeParams<CurrentNode extends ASTJSDocableNode = ASTJSDocableNode> {
     /**
      * Узел AST, к которому будет применяться JSDoc.
      *
@@ -306,7 +241,7 @@ export interface SetJSDocToNodeParams<
      * Этот сервис отвечает за создание JSDoc комментариев на основе предоставленных
      * параметров и опций, обеспечивая автоматизацию процесса документирования кода.
      */
-    jsDocGeneratorService: JSDocGeneratorService<CurrentAIServiceOptions>;
+    jsDocGeneratorService: JSDocGeneratorService;
     /**
      * Частичные опции JSDoc для настройки генерации JSDoc.
      *
@@ -323,14 +258,6 @@ export interface SetJSDocToNodeParams<
      * для генерации JSDoc комментариев.
      */
     sourceFile: SourceFile;
-    /**
-     * Параметры сервиса искусственного интеллекта, используемые при генерации JSDoc.
-     *
-     * @description
-     * Эти параметры определяют конфигурацию и поведение сервиса искусственного интеллекта,
-     * который используется для автоматической генерации JSDoc комментариев.
-     */
-    aiServiceOptions: CurrentAIServiceOptions;
 }
 
 /**
@@ -357,13 +284,7 @@ export interface ApplyJSDocParams<Node extends ASTJSDocableNode = ASTJSDocableNo
     jsDocOptions: Partial<JSDocOptions>;
 }
 
-/**
- * Интерфейс, описывающий параметры генерации кода.
- * @template CurrentAIServiceOptions - тип параметров для текущего сервиса искусственного интеллекта
- */
-export interface GenerationOptions<
-    CurrentAIServiceOptions extends AIServiceOptions = AIServiceOptions
-> {
+export interface GenerationOptions {
     /**
      * Массив, содержащий виды синтаксических элементов, которые будут использоваться
      * при генерации. Каждый элемент массива является ключом из перечисления SyntaxKind.
@@ -375,30 +296,16 @@ export interface GenerationOptions<
      * генерируемых JSDoc комментариев.
      */
     jsDocOptions?: JSDocOptions;
-    /**
-     * Объект, содержащий специфичные для текущего сервиса искусственного интеллекта
-     * параметры. Эти параметры позволяют настраивать поведение сервиса в процессе
-     * генерации. Тип определяется параметром CurrentAIServiceOptions.
-     */
-    aiServiceOptions: CurrentAIServiceOptions;
 }
 
-/**
- * Опции для генерации деталей синтаксических элементов.
- * Этот тип представляет собой частичное соответствие между типами синтаксических элементов и опциями генерации.
- * Каждому типу синтаксического элемента соответствует набор опций генерации, за исключением поля 'kinds'.
- * @template CurrentAIServiceOptions - Текущие опции сервиса ИИ, по умолчанию равны AIServiceOptions
- */
-export type DetailGenerationOptions<
-    CurrentAIServiceOptions extends AIServiceOptions = AIServiceOptions
-> = Partial<
-    Record<keyof typeof SyntaxKind, Omit<GenerationOptions<CurrentAIServiceOptions>, 'kinds'>>
+export type DetailGenerationOptions = Partial<
+    Record<keyof typeof SyntaxKind, Omit<GenerationOptions, 'kinds'>>
 >;
 
 /**
  * Интерфейс для параметров инициализации сервиса.
  */
-export interface InitParams<CurrentAIServiceOptions extends AIServiceOptions = AIServiceOptions> {
+export interface InitParams {
     /**
      * Опции для генерации кэша
      */
@@ -414,41 +321,17 @@ export interface InitParams<CurrentAIServiceOptions extends AIServiceOptions = A
      */
     projectOptions?: ProjectOptions;
     /**
-     * Опции для настройки ESLint, инструмента для анализа кода.
-     *
-     * @type {ESLint.Options}
-     */
-    // esLintOptions?: ESLint.Options;
-    /**
      * Массив строк, представляющих пути к файлам, которые будут обрабатываться сервисом.
      *
      * @type {string[]}
      */
     files: string[];
-    /**
-     * Массив строк, представляющих пути к файлам, которые должны быть проигнорированы сервисом.
-     *
-     * @type {string[]}
-     */
-    ignoredFiles?: string[];
-    /**
-     * Экземпляр сервиса генерации JSDoc, который используется для автоматического создания документации.
-     *
-     * @type {JSDocGeneratorService<CurrentAIServiceOptions>}
-     */
-    jsDocGeneratorService: JSDocGeneratorService<CurrentAIServiceOptions>;
-    /**
-     * Глобальные опции генерации, которые применяются ко всему процессу генерации.
-     *
-     * @type {GenerationOptions<CurrentAIServiceOptions>}
-     */
-    globalGenerationOptions?: GenerationOptions<CurrentAIServiceOptions>;
-    /**
-     * Опции детальной генерации, которые могут быть применены к более специфичным аспектам генерации.
-     *
-     * @type {DetailGenerationOptions<CurrentAIServiceOptions>}
-     */
-    detailGenerationOptions?: DetailGenerationOptions<CurrentAIServiceOptions>;
+
+    jsDocGeneratorService: JSDocGeneratorService;
+
+    globalGenerationOptions?: GenerationOptions;
+
+    detailGenerationOptions?: DetailGenerationOptions;
 }
 
 /**
@@ -496,25 +379,6 @@ export enum KindDeclarationNames {
 }
 
 /**
- * Тип, представляющий извлеченное объявление.
- * @template Kind - Тип объявления.
- * @template CurrentNode - Текущий узел AST с JSDoc.
- */
-export type ExtractedDeclaration<
-    Kind extends `${KindDeclarationNames}` = `${KindDeclarationNames}`,
-    CurrentNode extends ASTJSDocableNode = ASTJSDocableNode
-> = {
-    /**
-     * Тип объявления.
-     */
-    kind: Kind;
-    /**
-     * Массив узлов текущего AST с JSDoc.
-     */
-    nodes: CurrentNode[];
-};
-
-/**
  * Интерфейс JSDocNodeSetter представляет собой обобщенный тип, который определяет метод установки JSDoc к узлу AST.
  * @template Kind - Тип декларации узла.
  */
@@ -523,18 +387,8 @@ export interface JSDocNodeSetter<Kind extends KindDeclarationNames = KindDeclara
      * Тип декларации узла.
      */
     kind: Kind;
-    /**
-     * Устанавливает JSDoc к указанному узлу AST.
-     * @template CurrentNode - Текущий узел AST, который поддерживает JSDoc.
-     * @template CurrentAIServiceOptions - Опции сервиса искусственного интеллекта для текущего узла.
-     * @param {SetJSDocToNodeParams<CurrentNode, CurrentAIServiceOptions>} params - Параметры для установки JSDoc.
-     * @returns {Promise<void>} - Промис, который разрешается после установки JSDoc.
-     */
-    setJSDocToNode<
-        CurrentNode extends ASTJSDocableNode,
-        CurrentAIServiceOptions extends AIServiceOptions
-    >(
-        params: SetJSDocToNodeParams<CurrentNode, CurrentAIServiceOptions>
+    setJSDocToNode<CurrentNode extends ASTJSDocableNode>(
+        params: SetJSDocToNodeParams<CurrentNode>
     ): Promise<void>;
 }
 

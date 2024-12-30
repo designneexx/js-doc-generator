@@ -2,7 +2,7 @@ import { existsSync } from 'fs';
 import { unlink, stat } from 'fs/promises';
 import path from 'path';
 import { pathToFileURL } from 'url';
-import type { AIServiceOptions, InitParams } from '@auto-js-doc-generator/core';
+import type { InitParams } from '@auto-js-doc-generator/core';
 import { v5 } from 'uuid';
 
 /**
@@ -71,9 +71,7 @@ export function findConfigFile(cwd: string = process.cwd(), jsDocGenConfig = '')
  * @param {LoadConfigParams} [params] - параметры загрузки конфигурации
  * @returns {Promise<Partial<InitParams<CurrentAIServiceOptions>>>} - часть инициализационных параметров
  */
-export async function loadConfig<CurrentAIServiceOptions extends AIServiceOptions>(
-    params?: LoadConfigParams
-): Promise<Partial<InitParams<CurrentAIServiceOptions>>> {
+export async function loadConfig(params?: LoadConfigParams): Promise<Partial<InitParams>> {
     const {
         cwd = process.cwd(),
         currentDir = __dirname,
@@ -102,8 +100,7 @@ export async function loadConfig<CurrentAIServiceOptions extends AIServiceOption
         tsconfig: tsConfig
     });
 
-    const config: { default: { default: Partial<InitParams<CurrentAIServiceOptions>> } } =
-        await import(fileURL.href);
+    const config: { default: { default: Partial<InitParams> } } = await import(fileURL.href);
 
     await unlink(outfile);
 

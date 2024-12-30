@@ -1,12 +1,8 @@
-import { type AIServiceOptions, type InitParams, init } from '@auto-js-doc-generator/core';
+import { type InitParams, init } from '@auto-js-doc-generator/core';
 import { Command } from 'commander';
 import packageJSON from '../package.json';
 import { loadConfig } from './loadConfigFile';
 
-/**
- * Represents a type that makes all properties of the original type optional recursively.
- * @template T - The original type to make partial.
- */
 export type DeepPartial<T> = T extends object ? { [P in keyof T]?: DeepPartial<T[P]> } : T;
 
 /**
@@ -80,12 +76,12 @@ export function runByCli(): Command {
  * @param {DeepPartial<InitParams<CurrentAIServiceOptions>>} [overrideConfig] - переопределенные параметры конфигурации
  * @returns {Promise<void>} - промис, который завершается после успешной инициализации и запуска генерации
  */
-export async function start<CurrentAIServiceOptions extends AIServiceOptions>(
+export async function start(
     configParams?: ConfigParams | null,
-    overrideConfig?: DeepPartial<InitParams<CurrentAIServiceOptions>>
+    overrideConfig?: DeepPartial<InitParams>
 ): Promise<void> {
     try {
-        const config = await loadConfig<CurrentAIServiceOptions>({ ...configParams });
+        const config = await loadConfig({ ...configParams });
 
         await init({
             ...config,
@@ -94,7 +90,7 @@ export async function start<CurrentAIServiceOptions extends AIServiceOptions>(
                 ...config.globalGenerationOptions,
                 ...overrideConfig?.globalGenerationOptions
             }
-        } as InitParams<CurrentAIServiceOptions>);
+        } as InitParams);
     } catch (e) {
         const err = e as Error;
         console.log(

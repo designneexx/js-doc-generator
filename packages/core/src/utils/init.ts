@@ -1,6 +1,6 @@
 import { Cache } from 'file-system-cache';
 import { Project, SyntaxKind } from 'ts-morph';
-import { FileNodeSourceCode, type AIServiceOptions, type InitParams } from '../types/common';
+import { FileNodeSourceCode, type InitParams } from '../types/common';
 import { createFileCacheManagerMap } from './helpers/createFileCacheManagerMap';
 import { isNodeInCache } from './helpers/isNodeInCache';
 import { saveJSDocProcessedInCache } from './helpers/saveJSDocsProcessedInCache';
@@ -11,22 +11,7 @@ import { jsDocInterfaceSetter } from './nodes/jsDocInterfaceSetter';
 import { jsDocTypeAliasSetter } from './nodes/jsDocTypeAliasSetter';
 import { jsDocVariableStatementSetter } from './nodes/jsDocVariableStatementSetter';
 
-/**
- * Инициализирует процесс генерации JSDoc комментариев для заданных исходных файлов проекта.
- *
- * @template CurrentAIServiceOptions - Тип опций для текущего AI сервиса.
- * @param {InitParams<CurrentAIServiceOptions>} params - Параметры инициализации, включающие в себя:
- * @param {ProjectOptions} params.projectOptions - Опции для создания проекта.
- * @param {ESLint.Options} params.esLintOptions - Опции для конфигурации ESLint.
- * @param {string[]} params.files - Массив путей к файлам, для которых будет выполнена генерация JSDoc.
- * @param {JSDocGeneratorService} params.jsDocGeneratorService - Сервис для генерации JSDoc.
- * @param {GlobalGenerationOptions} params.globalGenerationOptions - Глобальные опции генерации.
- * @param {DetailGenerationOptions} params.detailGenerationOptions - Детализированные опции генерации.
- * @returns {Promise<void>} - Возвращает Promise, который разрешается после завершения генерации JSDoc и сохранения изменений.
- */
-export async function init<CurrentAIServiceOptions extends AIServiceOptions>(
-    params: InitParams<CurrentAIServiceOptions>
-): Promise<void> {
+export async function init(params: InitParams): Promise<void> {
     const {
         projectOptions,
         files,
@@ -57,8 +42,7 @@ export async function init<CurrentAIServiceOptions extends AIServiceOptions>(
     const fileCacheManagerMap = await createFileCacheManagerMap(cache);
 
     const kinds = globalGenerationOptions?.kinds || [];
-    const { aiServiceOptions: globalAiServiceOptions, jsDocOptions: globalJSDocOptions } =
-        globalGenerationOptions || {};
+    const { jsDocOptions: globalJSDocOptions } = globalGenerationOptions || {};
     const sourceFiles = project.addSourceFilesAtPaths(files);
 
     const jsDocNodeSetterList = [
@@ -90,13 +74,7 @@ export async function init<CurrentAIServiceOptions extends AIServiceOptions>(
                 }
 
                 const currentDetailGenerationOptions = detailGenerationOptions?.[kind];
-                const detailJSDocOptions = currentDetailGenerationOptions?.jsDocOptions || {};
-                const detailAiServiceOptions =
-                    currentDetailGenerationOptions?.aiServiceOptions || {};
-                const aiServiceOptions = {
-                    ...globalAiServiceOptions,
-                    ...detailAiServiceOptions
-                } as CurrentAIServiceOptions;
+                const detailJSDocOptions = currentDetailGenerationOptions?.jsDocOptions;
                 const jsDocOptions = {
                     ...globalJSDocOptions,
                     ...detailJSDocOptions
@@ -107,8 +85,7 @@ export async function init<CurrentAIServiceOptions extends AIServiceOptions>(
                         jsDocGeneratorService,
                         jsDocOptions,
                         node,
-                        sourceFile,
-                        aiServiceOptions
+                        sourceFile
                     })
                 );
 

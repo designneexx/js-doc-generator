@@ -1,7 +1,6 @@
 import type {
-    AIServiceOptions,
     ASTJSDocableNode,
-    InitJSDocFactoryParams,
+    createJSDocNodeSetterParams,
     JSDocNodeSetter,
     KindDeclarationNames,
     SetJSDocToNodeParams
@@ -13,35 +12,19 @@ import { getJSDocableNodesFromCodeSnippet } from './getJSDocableNodesFromCodeSni
 import { getMinifySourceCode } from './getMinifySourceCode';
 import { isProjectDependency } from './isProjectDependency';
 
-/**
- * Инициализирует фабрику JSDoc.
- * @template CurrentNode - Текущий узел AST, который поддерживает JSDoc.
- * @template Response - Тип возвращаемого значения.
- * @param {InitJSDocFactoryParams<CurrentNode, Response>} factoryParams - Параметры инициализации фабрики JSDoc.
- * @returns {Promise<boolean>} - Промис с результатом применения JSDoc.
- */
-export function initJSDocFactory<Kind extends KindDeclarationNames>(
-    factoryParams: InitJSDocFactoryParams<Kind>
+export function createJSDocNodeSetter<Kind extends KindDeclarationNames>(
+    data: createJSDocNodeSetterParams<Kind>
 ): JSDocNodeSetter<Kind> {
-    const { kind, getJSDocableCodeSnippet } = factoryParams;
+    const { kind, getJSDocableCodeSnippet } = data;
     const project = new Project();
     const cloneNodeAsFile = cloneNodeAsFileFactory(project);
 
     return {
         kind,
-        /**
-         * Устанавливает JSDoc для узла AST.
-         * @template CurrentNode - Текущий узел AST.
-         * @template CurrentAIServiceOptions - Опции сервиса AI.
-         * @param {SetJSDocToNodeParams<CurrentNode, CurrentAIServiceOptions>} params - Параметры установки JSDoc.
-         * @returns {Promise<void>} - Промис, завершающийся после установки JSDoc.
-         */
-        async setJSDocToNode<
-            CurrentNode extends ASTJSDocableNode,
-            CurrentAIServiceOptions extends AIServiceOptions
-        >(params: SetJSDocToNodeParams<CurrentNode, CurrentAIServiceOptions>): Promise<void> {
-            const { jsDocGeneratorService, node, jsDocOptions, sourceFile, aiServiceOptions } =
-                params;
+        setJSDocToNode: async <CurrentNode extends ASTJSDocableNode>(
+            params: SetJSDocToNodeParams<CurrentNode>
+        ): Promise<void> => {
+            const { jsDocGeneratorService, node, jsDocOptions, sourceFile } = params;
 
             const clonedSourceFile = cloneNodeAsFile(sourceFile);
             const codeSnippet = node.getText();
@@ -58,8 +41,7 @@ export function initJSDocFactory<Kind extends KindDeclarationNames>(
                     codeSnippet,
                     sourceFile: minifiedSourceFile,
                     referencedSourceFiles: referencedMinifiedSourceCode
-                },
-                aiServiceOptions
+                }
             });
 
             const jsDocs = getJSDocableNodesFromCodeSnippet(jsDocableCodeSnippet);
