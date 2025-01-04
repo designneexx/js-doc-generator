@@ -14,6 +14,12 @@ export function createJSDocGeneratorService(baseURL?: string): JSDocGeneratorSer
         baseURL: baseURL || process.env.JS_DOC_GENERATOR_SERVICE
     });
 
+    /**
+     * Функция для создания JSDoc комментариев
+     * @param {string} url - URL для отправки запроса
+     * @param {JSDocGeneratorServiceOptions} options - Опции генерации JSDoc комментариев
+     * @returns {Promise<string>} - Возвращает сгенерированные JSDoc комментарии в виде строки
+     */
     async function createJSDoc(url: string, options: JSDocGeneratorServiceOptions) {
         /**
          * Деструктуризация опций генерации JSDoc комментариев
@@ -29,6 +35,10 @@ export function createJSDocGeneratorService(baseURL?: string): JSDocGeneratorSer
         return response.data.code;
     }
 
+    /**
+     * Объект сервиса генерации JSDoc комментариев
+     * @type {JSDocGeneratorService}
+     */
     const jsDocGeneratorService: JSDocGeneratorService = {
         createJSDocClass(options) {
             return createJSDoc('/class', options);

@@ -1,8 +1,7 @@
 import { Cache } from 'file-system-cache';
 import { Project, SyntaxKind } from 'ts-morph';
-import { FileNodeSourceCode, type InitParams } from '../types/common';
+import { FileNodeSourceCode, JSDocOptions, type InitParams } from '../types/common';
 import { createFileCacheManagerMap } from './helpers/createFileCacheManagerMap';
-import { isNodeInCache } from './helpers/isNodeInCache';
 import { saveJSDocProcessedInCache } from './helpers/saveJSDocsProcessedInCache';
 import { jsDocClassSetter } from './nodes/jsDocClassSetter';
 import { jsDocEnumSetter } from './nodes/jsDocEnumSetter';
@@ -11,6 +10,11 @@ import { jsDocInterfaceSetter } from './nodes/jsDocInterfaceSetter';
 import { jsDocTypeAliasSetter } from './nodes/jsDocTypeAliasSetter';
 import { jsDocVariableStatementSetter } from './nodes/jsDocVariableStatementSetter';
 
+/**
+ * Инициализирует процесс генерации JSDoc комментариев для указанных файлов TypeScript.
+ * @param {InitParams} params - Параметры инициализации.
+ * @returns {Promise<void>} - Промис без возвращаемого значения.
+ */
 export async function init(params: InitParams): Promise<void> {
     const {
         projectOptions,
@@ -62,23 +66,30 @@ export async function init(params: InitParams): Promise<void> {
     );
 
     const jsDocNodePromises = sourceFiles.flatMap((sourceFile) => {
+        const fileSourceCode = sourceFile.getFullText();
+
         return allowedJsDocNodeSetterList.flatMap((jsDocNodeSetter) => {
             const { kind, setJSDocToNode } = jsDocNodeSetter;
             const nodes = sourceFile.getChildrenOfKind(SyntaxKind[kind]);
 
             return nodes.reduce((acc, node) => {
-                const hasCached = isNodeInCache({ node, fileCacheManagerMap, sourceFile });
-
-                if (hasCached) {
-                    return acc;
-                }
-
+                const nodeSourceCode = node.getFullText();
                 const currentDetailGenerationOptions = detailGenerationOptions?.[kind];
                 const detailJSDocOptions = currentDetailGenerationOptions?.jsDocOptions;
-                const jsDocOptions = {
+                const jsDocOptions: JSDocOptions = {
                     ...globalJSDocOptions,
                     ...detailJSDocOptions
                 };
+
+                if (
+                    fileCacheManagerMap.isNodeInCache({
+                        fileSourceCode,
+                        nodeSourceCode,
+                        jsDocOptions
+                    })
+                ) {
+                    return acc;
+                }
 
                 acc.push(
                     setJSDocToNode({
@@ -104,9 +115,17 @@ export async function init(params: InitParams): Promise<void> {
             const nodes = sourceFile.getChildrenOfKind(SyntaxKind[kind]);
 
             return nodes.reduce((acc, node) => {
+                const currentDetailGenerationOptions = detailGenerationOptions?.[kind];
+                const detailJSDocOptions = currentDetailGenerationOptions?.jsDocOptions;
+                const jsDocOptions: JSDocOptions = {
+                    ...globalJSDocOptions,
+                    ...detailJSDocOptions
+                };
+
                 acc.push({
                     fileSourceCode: sourceFile.getFullText(),
-                    nodeSourceCode: node.getFullText()
+                    nodeSourceCode: node.getFullText(),
+                    jsDocOptions
                 });
 
                 return acc;

@@ -1,7 +1,6 @@
 import { FileNodeSourceCode } from 'core/types/common';
 import { Cache } from 'file-system-cache';
 import { FileCacheManagerMap } from '../FileCacheManagerMap';
-import { getCacheFromNodeSourceFile } from './getCacheFromNodeSourceFile';
 
 /**
  * Параметры для сохранения обработанных JSDoc в кэше
@@ -41,7 +40,7 @@ export function saveJSDocProcessedInCache(
          * @param {Map<string, FileCacheManager>} params.fileCacheManagerMap - Карта менеджеров кэша файлов.
          * @returns {CacheData} - Данные кэша.
          */
-        const data = getCacheFromNodeSourceFile({ fileNodeSourceCode, fileCacheManagerMap });
+        const data = fileCacheManagerMap.getCacheFromNodeSourceFile(fileNodeSourceCode);
         /**
          * Получает кэш из узла и файла исходного кода.
          * @param {GetCacheFromNodeSourceFileParams} params - Параметры для получения кэша.
@@ -50,12 +49,14 @@ export function saveJSDocProcessedInCache(
          * @param {Map<string, FileCacheManager>} params.fileCacheManagerMap - Карта менеджеров кэша файлов.
          * @returns {CacheData} - Данные кэша.
          */
-        const { hashCodeSnippet, hashSourceCode, codeSnippetHashMap } = data;
+        const { hashCodeSnippet, hashSourceCode, codeSnippetHashMap, jsDocOptions } = data;
 
         codeSnippetHashMap.set(hashCodeSnippet, {
             fileSourceCodeHash: hashSourceCode,
-            nodeSourceCodeHash: hashCodeSnippet
+            nodeSourceCodeHash: hashCodeSnippet,
+            jsDocOptions
         });
+
         fileCacheManagerMap.set(hashSourceCode, codeSnippetHashMap);
     });
 

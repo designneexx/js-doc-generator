@@ -1,6 +1,6 @@
 import type {
     ASTJSDocableNode,
-    createJSDocNodeSetterParams,
+    CreateJSDocNodeSetterParams,
     JSDocNodeSetter,
     KindDeclarationNames,
     SetJSDocToNodeParams
@@ -12,8 +12,14 @@ import { getJSDocableNodesFromCodeSnippet } from './getJSDocableNodesFromCodeSni
 import { getMinifySourceCode } from './getMinifySourceCode';
 import { isProjectDependency } from './isProjectDependency';
 
+/**
+ * Создает функцию для установки JSDoc к узлу AST.
+ * @template Kind - Тип узла AST.
+ * @param {CreateJSDocNodeSetterParams<Kind>} data - Параметры для создания функции.
+ * @returns {JSDocNodeSetter<Kind>} - Функция установки JSDoc к узлу AST.
+ */
 export function createJSDocNodeSetter<Kind extends KindDeclarationNames>(
-    data: createJSDocNodeSetterParams<Kind>
+    data: CreateJSDocNodeSetterParams<Kind>
 ): JSDocNodeSetter<Kind> {
     const { kind, getJSDocableCodeSnippet } = data;
     const project = new Project();

@@ -1,6 +1,27 @@
+import sha1 from 'crypto-js/sha1.js';
 import { Cache } from 'file-system-cache';
-import { type FileCacheHashMetadata } from 'src/types/common';
+import { FileNodeSourceCode, JSDocOptions, type FileCacheHashMetadata } from 'src/types/common';
 import { getCacheList } from './helpers/getCacheList';
+
+/**
+ * Возвращаемый объект из кэша для исходного файла узла.
+ */
+interface GetCacheFromNodeSourceFileReturn {
+    /**
+     * Сниппет хэш-кода.
+     */
+    hashCodeSnippet: string;
+    /**
+     * Исходный код хэша.
+     */
+    hashSourceCode: string;
+    /**
+     * Хэш-карта кодовых сниппетов.
+     */
+    codeSnippetHashMap: Map<string, FileCacheHashMetadata>;
+
+    jsDocOptions: JSDocOptions;
+}
 
 /**
  * Ключ для кэширования
@@ -27,5 +48,30 @@ export class FileCacheManagerMap extends Map<string, Map<string, FileCacheHashMe
         const savings = entries.flatMap(getCacheList);
 
         return cache.set(CACHE_KEY, savings);
+    }
+
+    getCacheFromNodeSourceFile(
+        fileNodeSourceCode: FileNodeSourceCode
+    ): GetCacheFromNodeSourceFileReturn {
+        const { fileSourceCode, nodeSourceCode, jsDocOptions } = fileNodeSourceCode;
+        const hashDigestCodeSnippet = sha1(nodeSourceCode);
+        const hashDigestSourceCode = sha1(fileSourceCode);
+        const hashCodeSnippet = hashDigestCodeSnippet.toString();
+        const hashSourceCode = hashDigestSourceCode.toString();
+        const codeSnippetHashMap = this.get(hashSourceCode) || new Map();
+
+        return { hashCodeSnippet, hashSourceCode, codeSnippetHashMap, jsDocOptions };
+    }
+
+    isNodeInCache(fileNodeSourceCode: FileNodeSourceCode): boolean {
+        const { jsDocOptions } = fileNodeSourceCode;
+        const data = this.getCacheFromNodeSourceFile(fileNodeSourceCode);
+        const { codeSnippetHashMap, hashCodeSnippet } = data;
+        const fileCacheHashMetadata = codeSnippetHashMap.get(hashCodeSnippet);
+
+        return (
+            JSON.stringify(fileCacheHashMetadata?.jsDocOptions || {}) ===
+            JSON.stringify(jsDocOptions)
+        );
     }
 }
