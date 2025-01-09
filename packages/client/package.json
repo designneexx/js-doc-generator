@@ -37,7 +37,7 @@
         "path": "cz-conventional-changelog"
     },
     "dependencies": {
-        "@auto-js-doc-generator/core": "^1.1.15",
+        "@auto-js-doc-generator/core": "*",
         "axios": "^1.7.9",
         "dotenv": "^16.4.7"
     }

@@ -43,7 +43,7 @@
         "path": "cz-conventional-changelog"
     },
     "dependencies": {
-        "@auto-js-doc-generator/core": "^1.1.15",
+        "@auto-js-doc-generator/core": "*",
         "chalk": "^5.4.1",
         "commander": "^12.1.0",
         "esbuild": "^0.24.2",

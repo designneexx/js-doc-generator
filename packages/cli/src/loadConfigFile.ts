@@ -94,7 +94,13 @@ export async function loadConfig(params?: LoadConfigParams): Promise<Partial<Ini
         entryPoints: [configPath],
         bundle: true,
         packages: 'external',
-        external: ['auto-js-doc-generator', 'esbuild', '@auto-js-doc-generator/core'],
+        external: [
+            'auto-js-doc-generator',
+            'esbuild',
+            '@auto-js-doc-generator/core',
+            '@auto-js-doc-generator/client',
+            'auto-js-doc-generator'
+        ],
         platform: 'node',
         outfile,
         tsconfig: tsConfig
