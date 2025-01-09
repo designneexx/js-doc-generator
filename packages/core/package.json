@@ -1,5 +1,5 @@
 {
-    "version": "1.1.16",
+    "version": "1.1.17",
     "name": "@auto-js-doc-generator/core",
     "scripts": {
         "lint:check": "eslint src",
