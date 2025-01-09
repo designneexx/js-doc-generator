@@ -19,7 +19,7 @@ const possibleConfigFiles = [
 ];
 
 /**
- * Параметры для загрузки конфигурации.
+ * Параметры конфигурации загрузки.
  */
 export interface LoadConfigParams {
     /**
@@ -42,9 +42,9 @@ export interface LoadConfigParams {
 
 /**
  * Находит конфигурационный файл для jsDocGen.
- * @param {string} cwd - Текущая рабочая директория (по умолчанию process.cwd())
- * @param {string} jsDocGenConfig - Путь к конфигурационному файлу (если указан)
- * @returns {string} - Путь к найденному конфигурационному файлу
+ * @param {string} [cwd=process.cwd()] - Текущая рабочая директория.
+ * @param {string} [jsDocGenConfig=''] - Путь к пользовательскому конфигу.
+ * @returns {string} - Путь к найденному конфигурационному файлу.
  */
 export function findConfigFile(cwd: string = process.cwd(), jsDocGenConfig = ''): string {
     if (jsDocGenConfig) {
@@ -66,10 +66,9 @@ export function findConfigFile(cwd: string = process.cwd(), jsDocGenConfig = '')
 }
 
 /**
- * Загружает конфигурацию из файла, компилирует его с помощью esbuild и возвращает часть инициализационных параметров.
- * @template CurrentAIServiceOptions - обобщенный тип для параметров сервиса AI
- * @param {LoadConfigParams} [params] - параметры загрузки конфигурации
- * @returns {Promise<Partial<InitParams<CurrentAIServiceOptions>>>} - часть инициализационных параметров
+ * Асинхронно загружает конфигурацию и возвращает часть параметров инициализации.
+ * @param {LoadConfigParams} [params] - Параметры загрузки конфигурации.
+ * @returns {Promise<Partial<InitParams>>} Часть параметров инициализации.
  */
 export async function loadConfig(params?: LoadConfigParams): Promise<Partial<InitParams>> {
     const {

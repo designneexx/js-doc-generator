@@ -11,7 +11,8 @@ import { removeJSDoc } from './removeJSDoc';
 /**
  * Применяет JSDoc комментарии к узлу AST в соответствии с заданными параметрами.
  * @template CurrentNode - Тип узла AST, который поддерживает JSDoc комментарии.
- * @param {ApplyJSDocParams<CurrentNode>} params - Параметры применения JSDoc.
+ * @param {ApplyJSDocParams<CurrentNode>} params - Параметры для применения JSDoc.
+ * @returns {Promise<void>} - Промис без возвращаемого значения.
  */
 export async function applyJSDoc<CurrentNode extends ASTJSDocableNode = ASTJSDocableNode>(
     params: ApplyJSDocParams<CurrentNode>
@@ -35,6 +36,12 @@ export async function applyJSDoc<CurrentNode extends ASTJSDocableNode = ASTJSDoc
      * @returns {boolean} - Результат фильтрации тега.
      */
     function filterJSDocTags(jsDocTagStructure: OptionalKind<JSDocTagStructure>): boolean {
+        /**
+         * Форматирует структуру JSDoc комментария в соответствии с настройками.
+         * @param {JSDocStructure[]} acc - Аккумулятор структур JSDoc комментариев.
+         * @param {JSDocStructure} jsDocStructure - Структура JSDoc комментария.
+         * @returns {JSDocStructure[]} - Отформатированный массив структур JSDoc комментариев.
+         */
         const { tagName } = jsDocTagStructure;
 
         if (allowedJSDocTags.length) {
@@ -49,10 +56,10 @@ export async function applyJSDoc<CurrentNode extends ASTJSDocableNode = ASTJSDoc
     }
 
     /**
-     * Форматирует структуру JSDoc комментария в соответствии с настройками.
-     * @param {JSDocStructure[]} acc - Аккумулятор структур JSDoc комментариев.
-     * @param {JSDocStructure} jsDocStructure - Структура JSDoc комментария.
-     * @returns {JSDocStructure[]} - Отформатированный массив структур JSDoc комментариев.
+     * Добавляет JSDoc комментарии к узлу в соответствии с режимом вставки.
+     * @template DeepNode - Тип узла AST, который поддерживает JSDoc комментарии.
+     * @param {JSDocStructure[]} jsDocsStructure - Структура JSDoc комментариев.
+     * @param {DeepNode} deepNode - Узел AST.
      */
     function formatJSDocStructure(acc: JSDocStructure[], jsDocStructure: JSDocStructure) {
         const data = { ...jsDocStructure };

@@ -2,15 +2,16 @@ import { JSDocGeneratorServiceOptions, JSDocGeneratorService } from '@auto-js-do
 import axios from 'axios';
 
 /**
- * Функция для создания сервиса генерации JSDoc комментариев.
- * @param {string} [baseURL] - Базовый URL для HTTP-клиента, если не передан, то используется значение из переменной окружения JS_DOC_GENERATOR_SERVICE
+ * Функция для создания сервиса генерации JSDoc комментариев
+ * @param {string} [baseURL] - Опциональный базовый URL для HTTP-клиента
  * @returns {JSDocGeneratorService} - Возвращает объект сервиса генерации JSDoc комментариев
  */
 export function createJSDocGeneratorService(baseURL?: string): JSDocGeneratorService {
     /**
      * HTTP-клиент для выполнения запросов на сервер
      * @type {import("axios").AxiosInstance}
-     */ const axiosClient = axios.create({
+     */
+    const axiosClient = axios.create({
         baseURL: baseURL || process.env.JS_DOC_GENERATOR_SERVICE
     });
 
@@ -27,7 +28,8 @@ export function createJSDocGeneratorService(baseURL?: string): JSDocGeneratorSer
         const { codeSnippet, referencedSourceFiles, sourceFile } = options;
         /**
          * Отправка POST запроса с данными для получения JSDoc комментариев
-         */ const response = await axiosClient.post(url, {
+         */
+        const response = await axiosClient.post(url, {
             codeSnippet,
             referencedSourceFiles,
             sourceFile

@@ -2,7 +2,7 @@ import { JSDocNodeSetter, KindDeclarationNames } from 'core/types/common';
 import { createJSDocNodeSetter } from '../helpers/createJSDocNodeSetter';
 
 /**
- * Setter for JSDoc nodes related to Interface Declarations.
+ * JSDocNodeSetter for Interface Declaration.
  * @type {JSDocNodeSetter<KindDeclarationNames.InterfaceDeclaration>}
  */
 export const jsDocInterfaceSetter: JSDocNodeSetter<KindDeclarationNames.InterfaceDeclaration> =
@@ -14,6 +14,10 @@ export const jsDocInterfaceSetter: JSDocNodeSetter<KindDeclarationNames.Interfac
          * @returns {string} - JSDocable code snippet for Interface Declaration.
          */
         async getJSDocableCodeSnippet(params) {
+            /**
+             * Destructuring parameters for easier access.
+             * @type {JSDocableCodeSnippetParams}
+             */
             const { jsDocGeneratorService, jsDocGeneratorServiceOptions } = params;
 
             return jsDocGeneratorService.createJSDocInterface(jsDocGeneratorServiceOptions);

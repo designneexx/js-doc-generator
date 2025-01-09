@@ -3,7 +3,7 @@ import { JSDocableNode, SyntaxKind, Node, ts, SourceFile, type ProjectOptions } 
 
 /**
  * Опции для кэша файловой системы.
- * Этот тип представляет собой набор опций, которые могут быть переданы в конструктор класса FileSystemCache.
+ * Исключает из типа `ConstructorParameters<typeof FileSystemCache>[number]` значение `undefined`.
  */
 type FileSystemCacheOptions = Exclude<
     ConstructorParameters<typeof FileSystemCache>[number],
@@ -11,14 +11,13 @@ type FileSystemCacheOptions = Exclude<
 >;
 
 /**
- * Тип ASTJSDocableNode представляет узел абстрактного синтаксического дерева (AST),
- * который может содержать JSDoc комментарии.
+ * Тип, представляющий узел абстрактного синтаксического дерева (AST), который поддерживает JSDoc комментарии.
+ * Расширяет интерфейс JSDocableNode и Node из библиотеки TypeScript.
  */
 export type ASTJSDocableNode = JSDocableNode & Node<ts.Node>;
 
 /**
- * Перечисление для определения режима вставки элементов.
- * Определяет способы обновления или расширения коллекции элементов.
+ * Перечисление, определяющее режимы вставки элементов.
  */
 export enum InsertModeJSDocTypes {
     /**
@@ -88,13 +87,14 @@ export interface JSDocOptions {
 }
 
 /**
- * Тип, представляющий функцию для создания JSDoc кодового фрагмента.
- * Принимает настройки JSDoc генератора и возвращает обещание сгенерированного JSDoc кода в виде строки.
+ * Тип, представляющий функцию для создания JSDoc кодового фрагмента
+ * @param options - параметры сервиса генерации JSDoc
+ * @returns Promise<string> - обещание строки, представляющей JSDoc кодовый фрагмент
  */
 export type CreateJSDocCodeSnippet = (options: JSDocGeneratorServiceOptions) => Promise<string>;
 
 /**
- * Интерфейс для сервиса генерации JSDoc комментариев.
+ * Сервис для генерации JSDoc комментариев.
  */
 export interface JSDocGeneratorService {
     /**
@@ -143,7 +143,6 @@ export interface JSDocGeneratorService {
 
 /**
  * Интерфейс, представляющий сериализованный исходный файл.
- * Содержит текст исходного кода файла и путь к файлу на файловой системе.
  */
 export interface SerializedSourceFile {
     /**
@@ -160,7 +159,7 @@ export interface SerializedSourceFile {
 }
 
 /**
- * Опции для сервиса генерации JSDoc комментариев.
+ * Опции для сервиса генерации JSDoc.
  */
 export interface JSDocGeneratorServiceOptions {
     /**
@@ -181,7 +180,7 @@ export interface JSDocGeneratorServiceOptions {
 }
 
 /**
- * Параметры для получения фрагмента кода, поддерживающего JSDoc.
+ * Параметры для получения фрагмента кода, подлежащего JSDoc аннотации.
  */
 export interface GetJSDocableCodeSnippetParams {
     /**
@@ -199,7 +198,7 @@ export interface GetJSDocableCodeSnippetParams {
 }
 
 /**
- * Параметры для установки JSDoc для узла AST.
+ * Параметры для установки JSDoc узла AST.
  */
 export interface CreateJSDocNodeSetterParams<Kind extends KindDeclarationNames> {
     /**
@@ -216,7 +215,7 @@ export interface CreateJSDocNodeSetterParams<Kind extends KindDeclarationNames> 
 }
 
 /**
- * Параметры для установки JSDoc к узлу AST.
+ * Параметры для установки JSDoc комментариев к узлу AST.
  */
 export interface SetJSDocToNodeParams<CurrentNode extends ASTJSDocableNode = ASTJSDocableNode> {
     /**
@@ -278,7 +277,7 @@ export interface ApplyJSDocParams<Node extends ASTJSDocableNode = ASTJSDocableNo
 }
 
 /**
- * Интерфейс, описывающий параметры генерации кода.
+ * Интерфейс, описывающий параметры для генерации кода.
  */
 export interface GenerationOptions {
     /**
@@ -295,23 +294,24 @@ export interface GenerationOptions {
 }
 
 /**
- * Опции для генерации деталей синтаксических элементов.
- * Каждому типу синтаксического элемента соответствуют опции генерации.
+ * Опции для генерации деталей по различным типам синтаксических узлов.
+ * Этот тип представляет собой частичное отображение типа SyntaxKind на опции генерации,
+ * исключая типы узлов, указанные в поле `kinds`.
  */
 export type DetailGenerationOptions = Partial<
     Record<keyof typeof SyntaxKind, Omit<GenerationOptions, 'kinds'>>
 >;
 
 /**
- * Интерфейс для параметров инициализации сервиса.
+ * Параметры инициализации для сервиса генерации JSDoc.
  */
 export interface InitParams {
     /**
-     * Опции для генерации кэша
+     * Опции для генерации кэша.
      */
     cacheOptions?: FileSystemCacheOptions;
     /**
-     * Директория с кэшэм
+     * Директория, в которой хранится кэш.
      */
     cacheDir?: string;
     /**
@@ -355,6 +355,9 @@ export interface FileCacheHashMetadata {
      * Хэш исходного кода узла (Node)
      */
     nodeSourceCodeHash: string;
+    /**
+     * Опции JSDoc
+     */
     jsDocOptions: JSDocOptions;
 }
 
@@ -389,7 +392,7 @@ export enum KindDeclarationNames {
 }
 
 /**
- * Интерфейс JSDocNodeSetter представляет собой обобщенный тип, который определяет метод установки JSDoc к узлу AST.
+ * Интерфейс для установки JSDoc комментариев к узлам.
  * @template Kind - Тип декларации узла.
  */
 export interface JSDocNodeSetter<Kind extends KindDeclarationNames = KindDeclarationNames> {
@@ -409,7 +412,7 @@ export interface JSDocNodeSetter<Kind extends KindDeclarationNames = KindDeclara
 }
 
 /**
- * Интерфейс, представляющий исходный код файла и исходный код узла
+ * Интерфейс, представляющий исходный код файла и узла
  */
 export interface FileNodeSourceCode {
     /**
@@ -421,5 +424,8 @@ export interface FileNodeSourceCode {
      */
     nodeSourceCode: string;
 
+    /**
+     * Настройки JSDoc
+     */
     jsDocOptions: JSDocOptions;
 }

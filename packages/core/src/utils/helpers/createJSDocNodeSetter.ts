@@ -13,10 +13,10 @@ import { getMinifySourceCode } from './getMinifySourceCode';
 import { isProjectDependency } from './isProjectDependency';
 
 /**
- * Создает функцию для установки JSDoc к узлу AST.
- * @template Kind - Тип узла AST.
- * @param {CreateJSDocNodeSetterParams<Kind>} data - Параметры для создания функции.
- * @returns {JSDocNodeSetter<Kind>} - Функция установки JSDoc к узлу AST.
+ * Создает функцию-установщик JSDoc для узла AST определенного типа.
+ * @template Kind - Тип объявления узла AST.
+ * @param {CreateJSDocNodeSetterParams<Kind>} data - Параметры для создания функции-установщика JSDoc.
+ * @returns {JSDocNodeSetter<Kind>} - Функция-установщик JSDoc для узла AST.
  */
 export function createJSDocNodeSetter<Kind extends KindDeclarationNames>(
     data: CreateJSDocNodeSetterParams<Kind>

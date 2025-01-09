@@ -2,10 +2,10 @@ import { type ASTJSDocableNode } from 'core/types/common';
 import { Node, SyntaxKind, ts } from 'ts-morph';
 
 /**
- * Функция для создания фабрики, возвращающей функцию, получающую все JSDocable узлы из узла AST.
+ * Функция, возвращающая функцию для получения всех JSDocable узлов из узлов AST.
  *
- * @param {WeakMap<ASTJSDocableNode, number>} [depthNodeWeakMap] - Слабая карта для отображения узлов AST на их глубину.
- * @returns {(node: CurrentNode) => ASTJSDocableNode[]} - Функция, получающая все JSDocable узлы из узла AST.
+ * @param {WeakMap<ASTJSDocableNode, number>} [depthNodeWeakMap] - Слабая карта для хранения глубины узлов AST.
+ * @returns {(node: CurrentNode) => ASTJSDocableNode[]} - Функция для получения всех JSDocable узлов из узлов AST.
  */
 export function getAllJSDocableNodesFlatFactory(
     depthNodeWeakMap?: WeakMap<ASTJSDocableNode, number>

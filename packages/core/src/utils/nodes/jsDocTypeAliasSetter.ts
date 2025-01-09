@@ -2,7 +2,7 @@ import { JSDocNodeSetter, KindDeclarationNames } from 'core/types/common';
 import { createJSDocNodeSetter } from '../helpers/createJSDocNodeSetter';
 
 /**
- * Setter for JSDoc nodes of TypeAliasDeclaration kind.
+ * JSDocNodeSetter for TypeAliasDeclaration kind.
  */
 export const jsDocTypeAliasSetter: JSDocNodeSetter<KindDeclarationNames.TypeAliasDeclaration> =
     createJSDocNodeSetter({

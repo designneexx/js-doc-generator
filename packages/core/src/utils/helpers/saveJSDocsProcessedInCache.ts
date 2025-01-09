@@ -19,11 +19,9 @@ interface SaveJSDocProcessedInCacheParams {
 /**
  * Сохраняет обработанные JSDoc в кэше.
  * @param {SaveJSDocProcessedInCacheParams} params - Параметры для сохранения JSDoc в кэше.
- * @param {ProjectOptions} params.projectOptions - Опции проекта.
- * @param {string[]} params.files - Список путей к файлам.
- * @param {string[]} params.kinds - Список типов для фильтрации JSDoc.
- * @param {Map<string, FileCacheManager>} params.fileCacheManagerMap - Карта менеджеров кэша файлов.
- * @param {Cache} params.cache - Кэш для сохранения.
+ * @param {NodeSourceCode[]} params.fileNodeSourceCodeList - Список узлов исходного кода файлов.
+ * @param {Cache} params.cache - Кэш.
+ * @returns {Promise<{ path: string }>} - Объект с путем к сохраненному кэшу.
  */
 export function saveJSDocProcessedInCache(
     params: SaveJSDocProcessedInCacheParams
@@ -32,14 +30,6 @@ export function saveJSDocProcessedInCache(
     const fileCacheManagerMap = new FileCacheManagerMap();
 
     fileNodeSourceCodeList.forEach((fileNodeSourceCode) => {
-        /**
-         * Получает кэш из узла и файла исходного кода.
-         * @param {GetCacheFromNodeSourceFileParams} params - Параметры для получения кэша.
-         * @param {Node} params.node - Узел.
-         * @param {SourceFile} params.sourceFile - Файл исходного кода.
-         * @param {Map<string, FileCacheManager>} params.fileCacheManagerMap - Карта менеджеров кэша файлов.
-         * @returns {CacheData} - Данные кэша.
-         */
         const data = fileCacheManagerMap.getCacheFromNodeSourceFile(fileNodeSourceCode);
         /**
          * Получает кэш из узла и файла исходного кода.
@@ -51,6 +41,14 @@ export function saveJSDocProcessedInCache(
          */
         const { hashCodeSnippet, hashSourceCode, codeSnippetHashMap, jsDocOptions } = data;
 
+        /**
+         * Получает кэш из узла и файла исходного кода.
+         * @param {GetCacheFromNodeSourceFileParams} params - Параметры для получения кэша.
+         * @param {Node} params.node - Узел.
+         * @param {SourceFile} params.sourceFile - Файл исходного кода.
+         * @param {Map<string, FileCacheManager>} params.fileCacheManagerMap - Карта менеджеров кэша файлов.
+         * @returns {CacheData} - Данные кэша.
+         */
         codeSnippetHashMap.set(hashCodeSnippet, {
             fileSourceCodeHash: hashSourceCode,
             nodeSourceCodeHash: hashCodeSnippet,

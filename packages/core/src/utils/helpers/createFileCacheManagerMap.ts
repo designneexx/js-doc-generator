@@ -4,8 +4,8 @@ import { FileCacheManagerMap } from '../FileCacheManagerMap';
 
 /**
  * Создает отображение менеджера кэша файлов на основе переданного кэша.
- * @param {Cache} cache - Кэш, из которого нужно загрузить данные.
- * @returns {Promise<FileCacheManagerMap>} - Объект, представляющий отображение менеджера кэша файлов.
+ * @param {Cache} cache - Кэш, из которого нужно создать отображение менеджера кэша файлов.
+ * @returns {Promise<FileCacheManagerMap>} - Объект FileCacheManagerMap, содержащий отображение менеджера кэша файлов.
  */
 export async function createFileCacheManagerMap(cache: Cache): Promise<FileCacheManagerMap> {
     const serializedCache = await cache.load();

@@ -3,9 +3,9 @@ import { SerializedSourceFile } from 'core/types/common';
 import { SourceFile } from 'ts-morph';
 
 /**
- * Функция для минификации и получения сериализованного исходного кода файла
- * @param {SourceFile} sourceFile - Исходный файл, который нужно минифицировать
- * @returns {SerializedSourceFile} - Сериализованный исходный код файла
+ * Функция для минификации исходного кода файла и возврата сериализованного исходного файла.
+ * @param {SourceFile} sourceFile - Исходный файл, который нужно минифицировать.
+ * @returns {SerializedSourceFile} - Сериализованный исходный файл с минифицированным кодом и путем к файлу.
  */
 export function getMinifySourceCode(sourceFile: SourceFile): SerializedSourceFile {
     sourceFile.formatText(formatCodeSettings);

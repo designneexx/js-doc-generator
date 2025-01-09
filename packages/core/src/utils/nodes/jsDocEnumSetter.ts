@@ -2,7 +2,7 @@ import { JSDocNodeSetter, KindDeclarationNames } from 'core/types/common';
 import { createJSDocNodeSetter } from '../helpers/createJSDocNodeSetter';
 
 /**
- * Setter for JSDoc related to EnumDeclaration nodes.
+ * A JSDoc node setter for EnumDeclaration nodes.
  */
 export const jsDocEnumSetter: JSDocNodeSetter<KindDeclarationNames.EnumDeclaration> =
     createJSDocNodeSetter({

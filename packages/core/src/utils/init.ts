@@ -11,7 +11,7 @@ import { jsDocTypeAliasSetter } from './nodes/jsDocTypeAliasSetter';
 import { jsDocVariableStatementSetter } from './nodes/jsDocVariableStatementSetter';
 
 /**
- * Инициализирует процесс генерации JSDoc комментариев для указанных файлов TypeScript.
+ * Инициализирует процесс генерации JSDoc комментариев для указанных файлов и опций проекта.
  * @param {InitParams} params - Параметры инициализации.
  * @returns {Promise<void>} - Промис без возвращаемого значения.
  */
@@ -26,7 +26,10 @@ export async function init(params: InitParams): Promise<void> {
         cacheOptions
     } = params;
     /**
-     * Создает новый объект кэша для хранения кэшированных данных.
+     * @typedef {Object} FileNodeSourceCode - Информация о файле, узле и опциях JSDoc.
+     * @property {string} fileSourceCode - Исходный код файла.
+     * @property {string} nodeSourceCode - Исходный код узла.
+     * @property {JSDocOptions} jsDocOptions - Опции JSDoc комментариев.
      */
     const cache = new Cache({
         basePath: cacheDir, // (optional) Path where cache files are stored (default).
@@ -110,6 +113,8 @@ export async function init(params: InitParams): Promise<void> {
     await project.save();
 
     const fileNodeSourceCodeList = sourceFiles.flatMap((sourceFile) => {
+        const fileSourceCode = sourceFile.getFullText();
+
         return allowedJsDocNodeSetterList.flatMap((jsDocNodeSetter) => {
             const { kind } = jsDocNodeSetter;
             const nodes = sourceFile.getChildrenOfKind(SyntaxKind[kind]);
@@ -123,7 +128,7 @@ export async function init(params: InitParams): Promise<void> {
                 };
 
                 acc.push({
-                    fileSourceCode: sourceFile.getFullText(),
+                    fileSourceCode,
                     nodeSourceCode: node.getFullText(),
                     jsDocOptions
                 });

@@ -5,6 +5,8 @@ import { loadConfig } from './loadConfigFile';
 
 /**
  * Represents a type that makes all properties of the original type `T` optional recursively.
+ * If `T` is an object, each property will be optional, including nested properties.
+ * If `T` is not an object, it will remain as is.
  * @template T - The original type to make partial.
  */
 export type DeepPartial<T> = T extends object ? { [P in keyof T]?: DeepPartial<T[P]> } : T;
@@ -29,7 +31,7 @@ export interface ConfigParams {
 
 /**
  * Функция для запуска CLI генератора документации JSDoc.
- * @returns {Command} Возвращает объект Command для дальнейшей настройки CLI.
+ * @returns {Command} - Объект Command для настройки CLI команд.
  */
 export function runByCli(): Command {
     const command = new Command();
@@ -73,12 +75,10 @@ export function runByCli(): Command {
 }
 
 /**
- * Функция start запускает процесс инициализации и запуска генерации документации по переданным параметрам конфигурации.
- *
- * @template CurrentAIServiceOptions - обобщенный тип параметров сервиса AI
- * @param {ConfigParams | null} [configParams] - параметры конфигурации, которые могут быть переданы или оставлены пустыми
- * @param {DeepPartial<InitParams<CurrentAIServiceOptions>>} [overrideConfig] - переопределенные параметры конфигурации
- * @returns {Promise<void>} - промис, который завершается после успешной инициализации и запуска генерации
+ * Функция для запуска процесса инициализации с заданными параметрами конфигурации и возможностью их переопределения.
+ * @param {ConfigParams | null} configParams - Параметры конфигурации, которые можно передать для загрузки.
+ * @param {DeepPartial<InitParams>} overrideConfig - Переопределенные параметры инициализации.
+ * @returns {Promise<void>} - Промис, который завершится после успешного завершения инициализации.
  */
 export async function start(
     configParams?: ConfigParams | null,

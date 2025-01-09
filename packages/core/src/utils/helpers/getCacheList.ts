@@ -1,9 +1,9 @@
 import { type FileCacheHashMetadata } from 'core/types/common';
 
 /**
- * Получает список кэша из входного элемента.
- * @param entry - Входной элемент, содержащий ключ и карту значений кэша.
- * @returns Объект, содержащий ключ и массив значений кэша.
+ * Возвращает массив метаданных файлов из кэша
+ * @param entry - Входная запись кэша в формате [ключ, карта метаданных файлов]
+ * @returns Массив метаданных файлов
  */
 export function getCacheList(
     entry: [string, Map<string, FileCacheHashMetadata>]

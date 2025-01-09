@@ -4,7 +4,7 @@ import { FileNodeSourceCode, JSDocOptions, type FileCacheHashMetadata } from 'sr
 import { getCacheList } from './helpers/getCacheList';
 
 /**
- * Возвращаемый объект из кэша для исходного файла узла.
+ * Интерфейс, представляющий результат получения кэша из исходного файла узла.
  */
 interface GetCacheFromNodeSourceFileReturn {
     /**
@@ -20,6 +20,9 @@ interface GetCacheFromNodeSourceFileReturn {
      */
     codeSnippetHashMap: Map<string, FileCacheHashMetadata>;
 
+    /**
+     * Опции JSDoc.
+     */
     jsDocOptions: JSDocOptions;
 }
 
@@ -50,6 +53,11 @@ export class FileCacheManagerMap extends Map<string, Map<string, FileCacheHashMe
         return cache.set(CACHE_KEY, savings);
     }
 
+    /**
+     * Получает кэш из исходного кода узла файла
+     * @param fileNodeSourceCode - объект с исходным кодом файла
+     * @returns Объект с данными кэша из исходного кода файла
+     */
     getCacheFromNodeSourceFile(
         fileNodeSourceCode: FileNodeSourceCode
     ): GetCacheFromNodeSourceFileReturn {
@@ -63,6 +71,11 @@ export class FileCacheManagerMap extends Map<string, Map<string, FileCacheHashMe
         return { hashCodeSnippet, hashSourceCode, codeSnippetHashMap, jsDocOptions };
     }
 
+    /**
+     * Проверяет, содержится ли узел в кэше
+     * @param fileNodeSourceCode - объект с исходным кодом файла
+     * @returns Результат проверки наличия узла в кэше
+     */
     isNodeInCache(fileNodeSourceCode: FileNodeSourceCode): boolean {
         const { jsDocOptions } = fileNodeSourceCode;
         const data = this.getCacheFromNodeSourceFile(fileNodeSourceCode);

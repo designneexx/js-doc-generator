@@ -11,7 +11,7 @@ export default {
     },
     globalGenerationOptions: {
         jsDocOptions: {
-            mode: 0
+            mode: 1
         }
     }
 };

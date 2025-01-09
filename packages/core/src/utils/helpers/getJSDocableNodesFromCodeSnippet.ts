@@ -6,8 +6,8 @@ import { getAllJSDocableNodesFlatFactory } from './getAllJSDocableNodesFlatFacto
 /**
  * Получает все узлы с JSDoc из фрагмента кода.
  *
- * @param {string} codeSnippet - Фрагмент кода для анализа.
- * @returns {ASTJSDocableNode[]} - Массив узлов с JSDoc.
+ * @param codeSnippet - Фрагмент кода, из которого необходимо получить узлы с JSDoc.
+ * @returns Массив узлов с JSDoc.
  */
 export function getJSDocableNodesFromCodeSnippet(codeSnippet: string): ASTJSDocableNode[] {
     const project = new Project();

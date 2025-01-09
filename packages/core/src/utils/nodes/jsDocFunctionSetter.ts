@@ -2,7 +2,7 @@ import { JSDocNodeSetter, KindDeclarationNames } from 'core/types/common';
 import { createJSDocNodeSetter } from '../helpers/createJSDocNodeSetter';
 
 /**
- * Setter for JSDoc nodes of FunctionDeclaration kind.
+ * JSDocNodeSetter for FunctionDeclaration.
  */
 export const jsDocFunctionSetter: JSDocNodeSetter<KindDeclarationNames.FunctionDeclaration> =
     createJSDocNodeSetter({
@@ -15,6 +15,10 @@ export const jsDocFunctionSetter: JSDocNodeSetter<KindDeclarationNames.FunctionD
          * @returns {string} - The JSDocable code snippet for the FunctionDeclaration.
          */
         async getJSDocableCodeSnippet(params) {
+            /**
+             * Destructuring parameters for easier access.
+             * @type {JSDocNodeSetterParams}
+             */
             const { jsDocGeneratorService, jsDocGeneratorServiceOptions } = params;
 
             return jsDocGeneratorService.createJSDocFunction(jsDocGeneratorServiceOptions);
