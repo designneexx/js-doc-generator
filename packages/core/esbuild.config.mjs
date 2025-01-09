@@ -7,6 +7,7 @@ await esbuild.build({
     platform: 'node',
     outdir: 'dist',
     tsconfig: 'tsconfig.json',
+    packages: 'external',
     plugins: [
         {
             name: 'TypeScriptDeclarationsPlugin',
