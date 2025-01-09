@@ -70,8 +70,9 @@ export class FileCacheManagerMap extends Map<string, Map<string, FileCacheHashMe
         const fileCacheHashMetadata = codeSnippetHashMap.get(hashCodeSnippet);
 
         return (
+            codeSnippetHashMap.has(hashCodeSnippet) &&
             JSON.stringify(fileCacheHashMetadata?.jsDocOptions || {}) ===
-            JSON.stringify(jsDocOptions)
+                JSON.stringify(jsDocOptions)
         );
     }
 }
