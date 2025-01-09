@@ -7,6 +7,8 @@ await esbuild.build({
     platform: 'node',
     outdir: 'dist',
     tsconfig: 'tsconfig.json',
+    external: ['ts-morph'],
+    minify: true,
     plugins: [
         {
             name: 'TypeScriptDeclarationsPlugin',
