@@ -3,8 +3,7 @@ import {
     type ASTJSDocableNode,
     InsertModeJSDocTypes
 } from 'core/types/common';
-import type { JSDocStructure, JSDocTagStructure, OptionalKind } from 'ts-morph';
-import { getAllJSDocableNodesFlatFactory } from './getAllJSDocableNodesFlatFactory';
+import { Node, type JSDocStructure, type JSDocTagStructure, type OptionalKind } from 'ts-morph';
 import { getJSDocStructure } from './getJSDocStructure';
 import { removeJSDoc } from './removeJSDoc';
 
@@ -17,18 +16,18 @@ import { removeJSDoc } from './removeJSDoc';
 export async function applyJSDoc<CurrentNode extends ASTJSDocableNode = ASTJSDocableNode>(
     params: ApplyJSDocParams<CurrentNode>
 ): Promise<void> {
-    const { node, jsDocs, jsDocOptions } = params;
+    const { node, jsDocableNodes, jsDocOptions } = params;
     const {
         isShowJSDocDescription = true,
         isShowJSDocTags = true,
         allowedJSDocTags = [],
         disabledJSDocTags = [],
         mode = InsertModeJSDocTypes.ReplaceMode,
-        depth = Infinity
+        prefixDescription = '',
+        postfixDescription = ''
     } = jsDocOptions;
-    const depthNodeWeakMap = new Map<ASTJSDocableNode, number>();
-    const getAllJSDocableNodesFlat = getAllJSDocableNodesFlatFactory(depthNodeWeakMap);
-    const allJSDocableNodes = getAllJSDocableNodesFlat(node);
+    const isReplaceMode = mode === 'ReplaceMode' || mode === InsertModeJSDocTypes.ReplaceMode;
+    const allJSDocableNodes = [node, ...node.getDescendants().filter(Node.isJSDocable)];
 
     /**
      * Фильтрует JSDoc теги в соответствии с настройками.
@@ -92,24 +91,30 @@ export async function applyJSDoc<CurrentNode extends ASTJSDocableNode = ASTJSDoc
         jsDocsStructure: JSDocStructure[],
         deepNode: DeepNode
     ) {
-        const currentDepth = depthNodeWeakMap.get(deepNode) || 0;
         const nodeJSDocs = deepNode.getJsDocs();
         const filteredJSDocs = jsDocsStructure.filter((_, index) => !nodeJSDocs[index]);
 
-        if (currentDepth > depth) {
-            return;
+        if (isReplaceMode) {
+            nodeJSDocs.forEach(removeJSDoc);
         }
 
-        if (mode === InsertModeJSDocTypes.ReplaceMode) {
-            nodeJSDocs.forEach(removeJSDoc);
+        if (prefixDescription) {
+            deepNode.addJsDoc({ description: prefixDescription });
+        }
+
+        if (isReplaceMode) {
             deepNode.addJsDocs(jsDocsStructure.slice(0, 1));
         } else {
             deepNode.addJsDocs(filteredJSDocs.slice(0, 1));
         }
+
+        if (postfixDescription) {
+            deepNode.addJsDoc({ description: postfixDescription });
+        }
     }
 
     allJSDocableNodes.forEach((deepNode, index) => {
-        const jsDocableNode = jsDocs.at(index);
+        const jsDocableNode = jsDocableNodes.at(index);
 
         if (!jsDocableNode) return;
 

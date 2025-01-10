@@ -44,14 +44,7 @@ export interface JSDocOptions {
      * Определяет, каким образом будут вставляться JSDoc комментарии.
      * Может принимать значения из перечисления `InsertModeJSDocTypes` или их строковые представления.
      */
-    mode?: keyof typeof InsertModeJSDocTypes;
-    /**
-     * Глубина вложенности JSDoc комментариев.
-     *
-     * Указывает, насколько глубоко будут вложены JSDoc комментарии в структуре кода.
-     * Значение по умолчанию может варьироваться в зависимости от реализации.
-     */
-    depth?: number;
+    mode?: keyof typeof InsertModeJSDocTypes | InsertModeJSDocTypes;
     /**
      * Флаг для отображения описания в JSDoc комментариях.
      *
@@ -84,6 +77,16 @@ export interface JSDocOptions {
      * Если установлен в `true`, все настройки JSDoc будут игнорироваться и комментарии не будут генерироваться.
      */
     disabled?: boolean;
+
+    /**
+     * Префикс для описания в JSDoc комментариях.
+     */
+    prefixDescription?: string;
+
+    /**
+     * Постфикс для описания в JSDoc комментариях.
+     */
+    postfixDescription?: string;
 }
 
 /**
@@ -267,7 +270,7 @@ export interface ApplyJSDocParams<Node extends ASTJSDocableNode = ASTJSDocableNo
      *
      * @type {ASTJSDocableNode[]}
      */
-    jsDocs: ASTJSDocableNode[];
+    jsDocableNodes: ASTJSDocableNode[];
     /**
      * Настройки для применения JSDoc.
      *

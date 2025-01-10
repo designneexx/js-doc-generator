@@ -1,7 +1,6 @@
 import { type ASTJSDocableNode } from 'core/types/common';
-import { Project } from 'ts-morph';
+import { Node, Project } from 'ts-morph';
 import { v4 } from 'uuid';
-import { getAllJSDocableNodesFlatFactory } from './getAllJSDocableNodesFlatFactory';
 
 /**
  * Получает все узлы с JSDoc из фрагмента кода.
@@ -12,7 +11,7 @@ import { getAllJSDocableNodesFlatFactory } from './getAllJSDocableNodesFlatFacto
 export function getJSDocableNodesFromCodeSnippet(codeSnippet: string): ASTJSDocableNode[] {
     const project = new Project();
     const sourceFile = project.createSourceFile(`${v4()}.tsx`, codeSnippet);
-    const children = sourceFile.getChildren();
+    const nodes = sourceFile.getDescendants();
 
-    return children.flatMap(getAllJSDocableNodesFlatFactory());
+    return nodes.filter(Node.isJSDocable);
 }

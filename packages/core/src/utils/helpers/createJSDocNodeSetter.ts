@@ -41,7 +41,7 @@ export function createJSDocNodeSetter<Kind extends KindDeclarationNames>(
                 .map(getMinifySourceCode);
             const minifiedSourceFile = getMinifySourceCode(clonedSourceFile);
 
-            const jsDocableCodeSnippet = await getJSDocableCodeSnippet({
+            const jsDocCodeSnippet = await getJSDocableCodeSnippet({
                 jsDocGeneratorService,
                 jsDocGeneratorServiceOptions: {
                     codeSnippet,
@@ -50,7 +50,7 @@ export function createJSDocNodeSetter<Kind extends KindDeclarationNames>(
                 }
             });
 
-            const jsDocs = getJSDocableNodesFromCodeSnippet(jsDocableCodeSnippet);
+            const jsDocableNodes = getJSDocableNodesFromCodeSnippet(jsDocCodeSnippet);
 
             /**
              * Применяет JSDoc к узлу AST.
@@ -58,7 +58,7 @@ export function createJSDocNodeSetter<Kind extends KindDeclarationNames>(
              * @param {JSDoc[]} jsDocs - Список JSDoc для применения.
              * @param {JSDocOptions} jsDocOptions - Опции JSDoc.
              */
-            applyJSDoc({ node, jsDocs, jsDocOptions });
+            applyJSDoc({ node, jsDocableNodes, jsDocOptions });
         }
     };
 }
