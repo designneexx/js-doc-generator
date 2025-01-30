@@ -102,6 +102,15 @@ export async function start(
             jsDocGeneratorService: client,
             ...config,
             ...overrideConfig,
+            projectOptions: {
+                ...config?.projectOptions,
+                ...overrideConfig?.projectOptions,
+                tsConfigFilePath:
+                    params.tsConfig ||
+                    config?.projectOptions?.tsConfigFilePath ||
+                    overrideConfig?.projectOptions?.tsConfigFilePath ||
+                    'tsconfig.json'
+            },
             globalGenerationOptions: {
                 ...config.globalGenerationOptions,
                 ...overrideConfig?.globalGenerationOptions
