@@ -1,6 +1,6 @@
 import { createJSDocGeneratorService } from '@auto-js-doc-generator/client';
 import { type InitParams, init } from '@auto-js-doc-generator/core';
-import { Command } from 'commander';
+import { Command, program } from 'commander';
 import packageJSON from '../package.json';
 import { loadConfig } from './loadConfigFile';
 
@@ -61,15 +61,16 @@ export function runByCli(): Command {
             ''
         )
         .option('--url', 'Путь до вашего сервера с ИИ', '')
-        .action(async (_arg, options) => {
+        .action(async () => {
+            const opts = program.opts() as ConfigParams;
+            console.log(opts);
             /**
              * @typedef {Object} ConfigParams
              * @property {string} cwd - Базовая директория для начала работы генерации документации.
              * @property {string} tsConfig - Путь до конфига TypeScript.
              * @property {string} config - Путь до файла конфигурации.
              */
-            const parsedOptions: ConfigParams = options;
-            const { cwd, tsConfig, config, url } = parsedOptions;
+            const { cwd, tsConfig, config, url } = opts;
 
             await start({ cwd, tsConfig, config, url });
         });
