@@ -41,7 +41,7 @@ export async function init(params: InitParams): Promise<void> {
     /**
      * Создает новый объект проекта TypeScript.
      */
-    const project = new Project({ ...projectOptions, skipAddingFilesFromTsConfig: true });
+    const project = new Project({ ...projectOptions });
 
     /**
      * Создает карту менеджеров кэша для файлов.
