@@ -89,7 +89,7 @@ export async function start(
 ): Promise<void> {
     try {
         const { url, ...params } = configParams || {};
-        const config = await loadConfig({ ...params });
+        const config = await loadConfig({ ...params }).catch(() => ({}) as Partial<InitParams>);
 
         let client;
 
