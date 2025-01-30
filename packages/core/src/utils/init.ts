@@ -18,7 +18,7 @@ import { jsDocVariableStatementSetter } from './nodes/jsDocVariableStatementSett
 export async function init(params: InitParams): Promise<void> {
     const {
         projectOptions,
-        files,
+        files = [],
         jsDocGeneratorService,
         globalGenerationOptions,
         detailGenerationOptions,
@@ -50,7 +50,9 @@ export async function init(params: InitParams): Promise<void> {
 
     const kinds = globalGenerationOptions?.kinds || [];
     const { jsDocOptions: globalJSDocOptions } = globalGenerationOptions || {};
-    const sourceFiles = project.addSourceFilesAtPaths(files);
+    const sourceFiles = projectOptions?.skipAddingFilesFromTsConfig
+        ? project.addSourceFilesAtPaths(files)
+        : project.getSourceFiles();
 
     const jsDocNodeSetterList = [
         jsDocClassSetter,

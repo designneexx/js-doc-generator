@@ -98,6 +98,7 @@ export async function start(
         }
 
         await init({
+            files: [],
             jsDocGeneratorService: client,
             ...config,
             ...overrideConfig,
