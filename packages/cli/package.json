@@ -1,6 +1,6 @@
 {
     "name": "@auto-js-doc-generator/cli",
-    "version": "1.0.19",
+    "version": "1.0.20",
     "scripts": {
         "lint:check": "eslint src",
         "lint:write": "eslint src --fix",
