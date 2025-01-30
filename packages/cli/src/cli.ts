@@ -1,6 +1,6 @@
 import { createJSDocGeneratorService } from '@auto-js-doc-generator/client';
 import { type InitParams, init } from '@auto-js-doc-generator/core';
-import { Command, program } from 'commander';
+import { Command } from 'commander';
 import packageJSON from '../package.json';
 import { loadConfig } from './loadConfigFile';
 
@@ -52,7 +52,7 @@ export function runByCli(): Command {
             'Базовая директория для началы работы генерации документации. Библиотека берет от начала этого пути конфигурационный файл и читает tsconfig.json, если конфиг написан на TS'
         )
         .option(
-            '--tsconfig',
+            '--tsconfig <tsconfig>',
             'Путь до конфига TypeScript, если конфигурационный файл написан на TS. По умолчанию tsconfig.json'
         )
         .option(
@@ -60,10 +60,8 @@ export function runByCli(): Command {
             'Путь до файла конфигурации. По умолчанию jsdocgen.config.{js,cjs,mjs,ts,cts,mts}',
             ''
         )
-        .option('--url', 'Путь до вашего сервера с ИИ', '')
-        .action(async () => {
-            const opts = program.opts() as ConfigParams;
-            console.log(opts);
+        .option('--url <url>', 'Путь до вашего сервера с ИИ', '')
+        .action(async (opts: ConfigParams) => {
             /**
              * @typedef {Object} ConfigParams
              * @property {string} cwd - Базовая директория для начала работы генерации документации.
