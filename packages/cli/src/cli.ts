@@ -1,3 +1,4 @@
+import { createJSDocGeneratorService } from '@auto-js-doc-generator/client';
 import { type InitParams, init } from '@auto-js-doc-generator/core';
 import { Command } from 'commander';
 import packageJSON from '../package.json';
@@ -27,6 +28,7 @@ export interface ConfigParams {
      * Путь к файлу конфигурации.
      */
     config?: string;
+    url?: string;
 }
 
 /**
@@ -58,6 +60,7 @@ export function runByCli(): Command {
             'Путь до файла конфигурации. По умолчанию jsdocgen.config.{js,cjs,mjs,ts,cts,mts}',
             ''
         )
+        .option('--url', 'Путь до вашего сервера с ИИ', '')
         .action(async (_arg, options) => {
             /**
              * @typedef {Object} ConfigParams
@@ -66,9 +69,9 @@ export function runByCli(): Command {
              * @property {string} config - Путь до файла конфигурации.
              */
             const parsedOptions: ConfigParams = options;
-            const { cwd, tsConfig, config } = parsedOptions;
+            const { cwd, tsConfig, config, url } = parsedOptions;
 
-            await start({ cwd, tsConfig, config });
+            await start({ cwd, tsConfig, config, url });
         });
 
     return command;
@@ -85,9 +88,17 @@ export async function start(
     overrideConfig?: DeepPartial<InitParams>
 ): Promise<void> {
     try {
-        const config = await loadConfig({ ...configParams });
+        const { url, ...params } = configParams || {};
+        const config = await loadConfig({ ...params });
+
+        let client;
+
+        if (url?.trim()) {
+            client = createJSDocGeneratorService(url);
+        }
 
         await init({
+            jsDocGeneratorService: client,
             ...config,
             ...overrideConfig,
             globalGenerationOptions: {
