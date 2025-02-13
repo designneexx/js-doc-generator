@@ -305,6 +305,21 @@ export type DetailGenerationOptions = Partial<
     Record<keyof typeof SyntaxKind, Omit<GenerationOptions, 'kinds'>>
 >;
 
+export interface ProgressParams {
+    codeSnippet: ASTJSDocableNode;
+    sourceFile: SourceFile;
+    totalFiles: number;
+    codeSnippetsInFile: number;
+    codeSnippetsInAllFiles: number;
+    sourceFileIndex: number;
+    codeSnippetIndex: number;
+    isSuccess: boolean;
+    isPending: boolean;
+    error?: unknown;
+    response?: string;
+    isCached: boolean;
+}
+
 /**
  * Параметры инициализации для сервиса генерации JSDoc.
  */
@@ -344,6 +359,8 @@ export interface InitParams {
      * Опции детальной генерации.
      */
     detailGenerationOptions?: DetailGenerationOptions;
+
+    onProgress?: ((params: ProgressParams) => void) | null;
 }
 
 /**
@@ -411,7 +428,7 @@ export interface JSDocNodeSetter<Kind extends KindDeclarationNames = KindDeclara
      */
     setJSDocToNode<CurrentNode extends ASTJSDocableNode>(
         params: SetJSDocToNodeParams<CurrentNode>
-    ): Promise<void>;
+    ): Promise<string>;
 }
 
 /**

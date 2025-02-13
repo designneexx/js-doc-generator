@@ -23,7 +23,8 @@ export async function init(params: InitParams): Promise<void> {
         globalGenerationOptions,
         detailGenerationOptions,
         cacheDir = './.cache',
-        cacheOptions
+        cacheOptions,
+        onProgress
     } = params;
     /**
      * @typedef {Object} FileNodeSourceCode - Информация о файле, узле и опциях JSDoc.
@@ -70,14 +71,23 @@ export async function init(params: InitParams): Promise<void> {
         (item) => kinds.length === 0 || kinds.includes(item.kind)
     );
 
-    const jsDocNodePromises = sourceFiles.flatMap((sourceFile) => {
+    const total = sourceFiles.flatMap((sourceFile) =>
+        allowedJsDocNodeSetterList.flatMap((jsDocNodeSetter) => {
+            const { kind } = jsDocNodeSetter;
+            const nodes = sourceFile.getChildrenOfKind(SyntaxKind[kind]);
+
+            return nodes;
+        })
+    );
+
+    const jsDocNodePromises = sourceFiles.flatMap((sourceFile, fileIndex) => {
         const fileSourceCode = sourceFile.getFullText();
 
         return allowedJsDocNodeSetterList.flatMap((jsDocNodeSetter) => {
             const { kind, setJSDocToNode } = jsDocNodeSetter;
             const nodes = sourceFile.getChildrenOfKind(SyntaxKind[kind]);
 
-            return nodes.reduce((acc, node) => {
+            return nodes.reduce((acc, node, index) => {
                 const nodeSourceCode = node.getFullText();
                 const currentDetailGenerationOptions = detailGenerationOptions?.[kind];
                 const detailJSDocOptions = currentDetailGenerationOptions?.jsDocOptions;
@@ -85,14 +95,26 @@ export async function init(params: InitParams): Promise<void> {
                     ...globalJSDocOptions,
                     ...detailJSDocOptions
                 };
+                const isCached = fileCacheManagerMap.isNodeInCache({
+                    fileSourceCode,
+                    nodeSourceCode,
+                    jsDocOptions
+                });
 
-                if (
-                    fileCacheManagerMap.isNodeInCache({
-                        fileSourceCode,
-                        nodeSourceCode,
-                        jsDocOptions
-                    })
-                ) {
+                onProgress?.({
+                    sourceFile,
+                    codeSnippet: node,
+                    codeSnippetIndex: index,
+                    sourceFileIndex: fileIndex,
+                    totalFiles: sourceFiles.length,
+                    codeSnippetsInFile: nodes.length,
+                    isPending: isCached ? false : true,
+                    isSuccess: true,
+                    codeSnippetsInAllFiles: total.length,
+                    isCached: isCached
+                });
+
+                if (isCached) {
                     return acc;
                 }
 
@@ -103,6 +125,36 @@ export async function init(params: InitParams): Promise<void> {
                         node,
                         sourceFile
                     })
+                        .then((value) => {
+                            onProgress?.({
+                                sourceFile,
+                                codeSnippet: node,
+                                codeSnippetIndex: index,
+                                sourceFileIndex: fileIndex,
+                                totalFiles: sourceFiles.length,
+                                codeSnippetsInFile: nodes.length,
+                                isPending: false,
+                                isSuccess: true,
+                                codeSnippetsInAllFiles: total.length,
+                                response: value,
+                                isCached: false
+                            });
+                        })
+                        .catch((error) => {
+                            onProgress?.({
+                                sourceFile,
+                                codeSnippet: node,
+                                codeSnippetIndex: index,
+                                sourceFileIndex: fileIndex,
+                                totalFiles: sourceFiles.length,
+                                codeSnippetsInFile: nodes.length,
+                                isPending: false,
+                                isSuccess: false,
+                                codeSnippetsInAllFiles: total.length,
+                                error,
+                                isCached: false
+                            });
+                        })
                 );
 
                 return acc;

@@ -29,7 +29,7 @@ export function createJSDocNodeSetter<Kind extends KindDeclarationNames>(
         kind,
         setJSDocToNode: async <CurrentNode extends ASTJSDocableNode>(
             params: SetJSDocToNodeParams<CurrentNode>
-        ): Promise<void> => {
+        ): Promise<string> => {
             const { jsDocGeneratorService, node, jsDocOptions, sourceFile } = params;
 
             const clonedSourceFile = cloneNodeAsFile(sourceFile);
@@ -59,6 +59,8 @@ export function createJSDocNodeSetter<Kind extends KindDeclarationNames>(
              * @param {JSDocOptions} jsDocOptions - Опции JSDoc.
              */
             applyJSDoc({ node, jsDocableNodes, jsDocOptions });
+
+            return jsDocCodeSnippet;
         }
     };
 }
