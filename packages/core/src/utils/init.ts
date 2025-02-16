@@ -82,15 +82,7 @@ export async function init(params: InitParams): Promise<void> {
         (item) => kinds.length === 0 || kinds.includes(item.kind)
     );
 
-    const total = sourceFiles.flatMap((sourceFile) =>
-        allowedJsDocNodeSetterList.flatMap((jsDocNodeSetter) => {
-            const { kind } = jsDocNodeSetter;
-            const nodes = sourceFile.getChildrenOfKind(SyntaxKind[kind]);
-
-            return nodes;
-        })
-    );
-
+    let total = 0;
     const scheduler = createScheduler();
     const jsDocGeneratorServiceScheduler = createScheduler(timeoutBetweenRequests || 0);
     const wrappedJSDocGeneratorService: JSDocGeneratorService = scheduleJSDocGeneratorService(
@@ -106,6 +98,7 @@ export async function init(params: InitParams): Promise<void> {
             const nodes = sourceFile.getChildrenOfKind(SyntaxKind[kind]);
 
             return nodes.reduce((acc, node, index) => {
+                total += 1;
                 const nodeSourceCode = node.getFullText();
                 const currentDetailGenerationOptions = detailGenerationOptions?.[kind];
                 const detailJSDocOptions = currentDetailGenerationOptions?.jsDocOptions;
@@ -125,6 +118,7 @@ export async function init(params: InitParams): Promise<void> {
                 }
 
                 scheduler.runTask(async () => {
+                    await sleep(0);
                     onProgress?.({
                         sourceFile,
                         codeSnippet: node,
@@ -134,7 +128,7 @@ export async function init(params: InitParams): Promise<void> {
                         codeSnippetsInFile: nodes.length,
                         isPending: isCached ? false : true,
                         isSuccess: true,
-                        codeSnippetsInAllFiles: total.length,
+                        codeSnippetsInAllFiles: total,
                         isCached: isCached,
                         id
                     });
@@ -162,7 +156,7 @@ export async function init(params: InitParams): Promise<void> {
                             codeSnippetsInFile: nodes.length,
                             isPending: false,
                             isSuccess: true,
-                            codeSnippetsInAllFiles: total.length,
+                            codeSnippetsInAllFiles: total,
                             response: value,
                             isCached: false,
                             id
@@ -179,7 +173,7 @@ export async function init(params: InitParams): Promise<void> {
                             codeSnippetsInFile: nodes.length,
                             isPending: false,
                             isSuccess: false,
-                            codeSnippetsInAllFiles: total.length,
+                            codeSnippetsInAllFiles: total,
                             error,
                             isCached: false,
                             id
