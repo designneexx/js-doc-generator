@@ -190,7 +190,7 @@ export async function init(params: InitParams): Promise<void> {
         });
     });
 
-    await Promise.all(jsDocNodePromises);
+    await Promise.allSettled(jsDocNodePromises);
 
     await project.save();
 
