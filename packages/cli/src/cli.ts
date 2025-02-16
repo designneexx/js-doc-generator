@@ -28,6 +28,9 @@ export interface ConfigParams {
      * Путь к файлу конфигурации.
      */
     config?: string;
+    /**
+     * URL-адрес, который может быть использован в конфигурации.
+     */
     url?: string;
 }
 

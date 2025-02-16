@@ -1,8 +1,17 @@
 import { Cache } from 'file-system-cache';
 import { Project, SyntaxKind } from 'ts-morph';
-import { FileNodeSourceCode, JSDocOptions, type InitParams } from '../types/common';
+import { v4 } from 'uuid';
+import {
+    FileNodeSourceCode,
+    JSDocGeneratorService,
+    JSDocOptions,
+    type InitParams
+} from '../types/common';
 import { createFileCacheManagerMap } from './helpers/createFileCacheManagerMap';
+import { createScheduler } from './helpers/createScheduler';
 import { saveJSDocProcessedInCache } from './helpers/saveJSDocsProcessedInCache';
+import { scheduleJSDocGeneratorService } from './helpers/scheduleJSDocGeneratorService';
+import { sleep } from './helpers/sleep';
 import { jsDocClassSetter } from './nodes/jsDocClassSetter';
 import { jsDocEnumSetter } from './nodes/jsDocEnumSetter';
 import { jsDocFunctionSetter } from './nodes/jsDocFunctionSetter';
@@ -24,7 +33,9 @@ export async function init(params: InitParams): Promise<void> {
         detailGenerationOptions,
         cacheDir = './.cache',
         cacheOptions,
-        onProgress
+        onProgress,
+        timeoutBetweenRequests,
+        waitTimeBetweenProgressNotifications
     } = params;
     /**
      * @typedef {Object} FileNodeSourceCode - Информация о файле, узле и опциях JSDoc.
@@ -80,6 +91,13 @@ export async function init(params: InitParams): Promise<void> {
         })
     );
 
+    const scheduler = createScheduler();
+    const jsDocGeneratorServiceScheduler = createScheduler(timeoutBetweenRequests || 0);
+    const wrappedJSDocGeneratorService: JSDocGeneratorService = scheduleJSDocGeneratorService(
+        jsDocGeneratorService,
+        timeoutBetweenRequests ? jsDocGeneratorServiceScheduler : null
+    );
+
     const jsDocNodePromises = sourceFiles.flatMap((sourceFile, fileIndex) => {
         const fileSourceCode = sourceFile.getFullText();
 
@@ -100,65 +118,81 @@ export async function init(params: InitParams): Promise<void> {
                     nodeSourceCode,
                     jsDocOptions
                 });
-
-                onProgress?.({
-                    sourceFile,
-                    codeSnippet: node,
-                    codeSnippetIndex: index,
-                    sourceFileIndex: fileIndex,
-                    totalFiles: sourceFiles.length,
-                    codeSnippetsInFile: nodes.length,
-                    isPending: isCached ? false : true,
-                    isSuccess: true,
-                    codeSnippetsInAllFiles: total.length,
-                    isCached: isCached
-                });
+                const id = v4();
 
                 if (isCached) {
                     return acc;
                 }
 
-                acc.push(
-                    setJSDocToNode({
-                        jsDocGeneratorService,
-                        jsDocOptions,
-                        node,
-                        sourceFile
-                    })
-                        .then((value) => {
-                            onProgress?.({
-                                sourceFile,
-                                codeSnippet: node,
-                                codeSnippetIndex: index,
-                                sourceFileIndex: fileIndex,
-                                totalFiles: sourceFiles.length,
-                                codeSnippetsInFile: nodes.length,
-                                isPending: false,
-                                isSuccess: true,
-                                codeSnippetsInAllFiles: total.length,
-                                response: value,
-                                isCached: false
-                            });
-                        })
-                        .catch((error) => {
-                            onProgress?.({
-                                sourceFile,
-                                codeSnippet: node,
-                                codeSnippetIndex: index,
-                                sourceFileIndex: fileIndex,
-                                totalFiles: sourceFiles.length,
-                                codeSnippetsInFile: nodes.length,
-                                isPending: false,
-                                isSuccess: false,
-                                codeSnippetsInAllFiles: total.length,
-                                error,
-                                isCached: false
-                            });
-                        })
-                );
+                scheduler.runTask(async () => {
+                    onProgress?.({
+                        sourceFile,
+                        codeSnippet: node,
+                        codeSnippetIndex: index,
+                        sourceFileIndex: fileIndex,
+                        totalFiles: sourceFiles.length,
+                        codeSnippetsInFile: nodes.length,
+                        isPending: isCached ? false : true,
+                        isSuccess: true,
+                        codeSnippetsInAllFiles: total.length,
+                        isCached: isCached,
+                        id
+                    });
+                });
+
+                const promise = setJSDocToNode({
+                    jsDocGeneratorService: wrappedJSDocGeneratorService,
+                    jsDocOptions,
+                    node,
+                    sourceFile
+                });
+
+                scheduler.runTask(async () => {
+                    try {
+                        await sleep(waitTimeBetweenProgressNotifications || 0);
+
+                        const value = await promise;
+
+                        onProgress?.({
+                            sourceFile,
+                            codeSnippet: node,
+                            codeSnippetIndex: index,
+                            sourceFileIndex: fileIndex,
+                            totalFiles: sourceFiles.length,
+                            codeSnippetsInFile: nodes.length,
+                            isPending: false,
+                            isSuccess: true,
+                            codeSnippetsInAllFiles: total.length,
+                            response: value,
+                            isCached: false,
+                            id
+                        });
+
+                        await sleep(waitTimeBetweenProgressNotifications || 0);
+                    } catch (error) {
+                        onProgress?.({
+                            sourceFile,
+                            codeSnippet: node,
+                            codeSnippetIndex: index,
+                            sourceFileIndex: fileIndex,
+                            totalFiles: sourceFiles.length,
+                            codeSnippetsInFile: nodes.length,
+                            isPending: false,
+                            isSuccess: false,
+                            codeSnippetsInAllFiles: total.length,
+                            error,
+                            isCached: false,
+                            id
+                        });
+
+                        await sleep(waitTimeBetweenProgressNotifications || 0);
+                    }
+                });
+
+                acc.push(promise);
 
                 return acc;
-            }, [] as Promise<void>[]);
+            }, [] as Promise<string>[]);
         });
     });
 

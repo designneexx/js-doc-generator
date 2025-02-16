@@ -305,19 +305,62 @@ export type DetailGenerationOptions = Partial<
     Record<keyof typeof SyntaxKind, Omit<GenerationOptions, 'kinds'>>
 >;
 
+/**
+ * Интерфейс для параметров прогресса
+ */
 export interface ProgressParams {
+    /**
+     * Кодовый фрагмент
+     */
     codeSnippet: ASTJSDocableNode;
+    /**
+     * Исходный файл
+     */
     sourceFile: SourceFile;
+    /**
+     * Общее количество файлов
+     */
     totalFiles: number;
+    /**
+     * Количество кодовых фрагментов в файле
+     */
     codeSnippetsInFile: number;
+    /**
+     * Общее количество кодовых фрагментов во всех файлах
+     */
     codeSnippetsInAllFiles: number;
+    /**
+     * Индекс исходного файла
+     */
     sourceFileIndex: number;
+    /**
+     * Индекс кодового фрагмента
+     */
     codeSnippetIndex: number;
+    /**
+     * Флаг успешности выполнения
+     */
     isSuccess: boolean;
+    /**
+     * Флаг ожидания
+     */
     isPending: boolean;
+    /**
+     * Ошибка (необязательно)
+     */
     error?: unknown;
+    /**
+     * Ответ
+     */
     response?: string;
+    /**
+     * Флаг кэширования
+     */
     isCached: boolean;
+    /**
+     * Идентификатор
+     */
+    id: string;
 }
 
 /**
@@ -360,7 +403,22 @@ export interface InitParams {
      */
     detailGenerationOptions?: DetailGenerationOptions;
 
+    /**
+     * Функция обратного вызова для отслеживания прогресса генерации.
+     *
+     * @param {ProgressParams} params Параметры прогресса.
+     */
     onProgress?: ((params: ProgressParams) => void) | null;
+
+    /**
+     * Время ожидания между запросами.
+     */
+    timeoutBetweenRequests?: number | null;
+
+    /**
+     * Время ожидания между уведомлениями о прогрессе.
+     */
+    waitTimeBetweenProgressNotifications?: number | null;
 }
 
 /**
