@@ -9,7 +9,7 @@ import { Scheduler } from './createScheduler';
  */
 export function scheduleJSDocGeneratorService(
     jsDocGeneratorService: JSDocGeneratorService,
-    jsDocGeneratorServiceScheduler?: Scheduler | null
+    jsDocGeneratorServiceScheduler?: Scheduler<string> | null
 ): JSDocGeneratorService {
     /**
      * Обёртка вокруг метода сервиса JSDocGeneratorService.

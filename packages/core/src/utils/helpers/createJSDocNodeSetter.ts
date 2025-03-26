@@ -22,15 +22,21 @@ export function createJSDocNodeSetter<Kind extends KindDeclarationNames>(
     data: CreateJSDocNodeSetterParams<Kind>
 ): JSDocNodeSetter<Kind> {
     const { kind, getJSDocableCodeSnippet } = data;
-    const project = new Project();
-    const cloneNodeAsFile = cloneNodeAsFileFactory(project);
+    const emptyProject = new Project();
+    const cloneNodeAsFile = cloneNodeAsFileFactory(emptyProject);
 
     return {
         kind,
         setJSDocToNode: async <CurrentNode extends ASTJSDocableNode>(
             params: SetJSDocToNodeParams<CurrentNode>
         ): Promise<string> => {
-            const { jsDocGeneratorService, node, jsDocOptions, sourceFile } = params;
+            const {
+                jsDocGeneratorService,
+                node,
+                jsDocOptions,
+                sourceFile,
+                isSaveAfterEachIteration
+            } = params;
 
             const clonedSourceFile = cloneNodeAsFile(sourceFile);
             const codeSnippet = node.getText();
@@ -59,6 +65,10 @@ export function createJSDocNodeSetter<Kind extends KindDeclarationNames>(
              * @param {JSDocOptions} jsDocOptions - Опции JSDoc.
              */
             applyJSDoc({ node, jsDocableNodes, jsDocOptions });
+
+            if (isSaveAfterEachIteration) {
+                await sourceFile.save();
+            }
 
             return jsDocCodeSnippet;
         }

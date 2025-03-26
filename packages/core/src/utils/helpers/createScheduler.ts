@@ -39,13 +39,17 @@ export type TaskResult<Value> = SuccessTask<Value> | FailedTask;
 /**
  * Интерфейс Scheduler представляет собой планировщик задач.
  */
-export interface Scheduler {
+export interface Scheduler<T> {
     /**
      * Запускает задачу и возвращает результат выполнения.
      * @param callback Функция обратного вызова, представляющая собой асинхронную задачу.
      * @returns Промис с результатом выполнения задачи.
      */
-    runTask<T>(callback: () => Promise<T>): Promise<TaskResult<T>>;
+    runTask(callback: () => Promise<T>): Promise<TaskResult<T>>;
+    /**
+     * Массив промисов, представляющих результаты выполнения задач.
+     */
+    promises: Promise<IteratorResult<TaskResult<T>>>[];
 }
 
 /**
@@ -53,8 +57,9 @@ export interface Scheduler {
  * @param {number} ms - Время ожидания в миллисекундах между выполнением задач (по умолчанию 0)
  * @returns {Scheduler} - Возвращает объект планировщика задач
  */
-export function createScheduler(ms = 0): Scheduler {
-    const queueSet = new Set<() => Promise<unknown>>();
+export function createScheduler<T>(ms = 0): Scheduler<T> {
+    const queueSet = new Set<() => Promise<T>>();
+    const promises: Promise<IteratorResult<TaskResult<T>>>[] = [];
     /**
      * Генератор, который поочередно выполняет задачи из очереди
      * @yields {TaskResult} - Результат выполнения задачи
@@ -80,15 +85,18 @@ export function createScheduler(ms = 0): Scheduler {
          * @param {Function} callback - Функция-задача, которая возвращает Promise
          * @returns {Promise<TaskResult>} - Результат выполнения задачи
          */
-        async runTask<T>(callback: () => Promise<T>): Promise<TaskResult<T>> {
+        async runTask(callback: () => Promise<T>): Promise<TaskResult<T>> {
             queueSet.add(callback);
-            const iteratorResult = await iterator.next();
+            const promise = iterator.next();
+            promises.push(promise);
+            const iteratorResult = await promise;
 
             if (!iteratorResult.done) {
                 return iteratorResult.value as TaskResult<T>;
             }
 
             throw new Error("Can't get task");
-        }
+        },
+        promises
     };
 }

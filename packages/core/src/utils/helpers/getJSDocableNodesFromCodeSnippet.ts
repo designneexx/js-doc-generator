@@ -11,6 +11,7 @@ import { v4 } from 'uuid';
 export function getJSDocableNodesFromCodeSnippet(codeSnippet: string): ASTJSDocableNode[] {
     const project = new Project();
     const sourceFile = project.createSourceFile(`${v4()}.tsx`, codeSnippet);
+
     const nodes = sourceFile.getDescendants();
 
     return nodes.filter(Node.isJSDocable);

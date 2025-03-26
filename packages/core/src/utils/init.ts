@@ -5,8 +5,10 @@ import {
     FileNodeSourceCode,
     JSDocGeneratorService,
     JSDocOptions,
+    SourceFileProgressData,
     type InitParams
 } from '../types/common';
+import { AllJSDocIterationError } from './AllJSDocIterationError';
 import { createFileCacheManagerMap } from './helpers/createFileCacheManagerMap';
 import { createScheduler } from './helpers/createScheduler';
 import { saveJSDocProcessedInCache } from './helpers/saveJSDocsProcessedInCache';
@@ -18,6 +20,8 @@ import { jsDocFunctionSetter } from './nodes/jsDocFunctionSetter';
 import { jsDocInterfaceSetter } from './nodes/jsDocInterfaceSetter';
 import { jsDocTypeAliasSetter } from './nodes/jsDocTypeAliasSetter';
 import { jsDocVariableStatementSetter } from './nodes/jsDocVariableStatementSetter';
+
+const DEFAULT_CACHE_DIR = './.cache';
 
 /**
  * Инициализирует процесс генерации JSDoc комментариев для указанных файлов и опций проекта.
@@ -31,11 +35,13 @@ export async function init(params: InitParams): Promise<void> {
         jsDocGeneratorService,
         globalGenerationOptions,
         detailGenerationOptions,
-        cacheDir = './.cache',
+        cacheDir = DEFAULT_CACHE_DIR,
         cacheOptions,
         onProgress,
         timeoutBetweenRequests,
-        waitTimeBetweenProgressNotifications
+        waitTimeBetweenProgressNotifications,
+        isSaveAfterEachIteration = false,
+        disabledCached
     } = params;
     /**
      * @typedef {Object} FileNodeSourceCode - Информация о файле, узле и опциях JSDoc.
@@ -44,7 +50,7 @@ export async function init(params: InitParams): Promise<void> {
      * @property {JSDocOptions} jsDocOptions - Опции JSDoc комментариев.
      */
     const cache = new Cache({
-        basePath: cacheDir, // (optional) Path where cache files are stored (default).
+        basePath: cacheDir || DEFAULT_CACHE_DIR, // (optional) Path where cache files are stored (default).
         ns: 'jsdocgen', // (optional) A grouping namespace for items.
         hash: 'sha1', // (optional) A hashing algorithm used within the cache key.
         ...cacheOptions
@@ -63,7 +69,7 @@ export async function init(params: InitParams): Promise<void> {
     const kinds = globalGenerationOptions?.kinds || [];
     const { jsDocOptions: globalJSDocOptions } = globalGenerationOptions || {};
     const sourceFiles = projectOptions?.skipAddingFilesFromTsConfig
-        ? project.addSourceFilesAtPaths(files)
+        ? project.addSourceFilesAtPaths(files || [])
         : project.getSourceFiles();
 
     const jsDocNodeSetterList = [
@@ -83,8 +89,8 @@ export async function init(params: InitParams): Promise<void> {
     );
 
     let total = 0;
-    const scheduler = createScheduler();
-    const jsDocGeneratorServiceScheduler = createScheduler(timeoutBetweenRequests || 0);
+    const scheduler = createScheduler<void>();
+    const jsDocGeneratorServiceScheduler = createScheduler<string>(timeoutBetweenRequests || 0);
     const wrappedJSDocGeneratorService: JSDocGeneratorService = scheduleJSDocGeneratorService(
         jsDocGeneratorService,
         timeoutBetweenRequests ? jsDocGeneratorServiceScheduler : null
@@ -92,13 +98,19 @@ export async function init(params: InitParams): Promise<void> {
 
     const jsDocNodePromises = sourceFiles.flatMap((sourceFile, fileIndex) => {
         const fileSourceCode = sourceFile.getFullText();
+        const filePath = sourceFile.getFilePath();
 
         return allowedJsDocNodeSetterList.flatMap((jsDocNodeSetter) => {
             const { kind, setJSDocToNode } = jsDocNodeSetter;
             const nodes = sourceFile.getChildrenOfKind(SyntaxKind[kind]);
 
             return nodes.reduce((acc, node, index) => {
+                const currentGeneralIndex = total;
                 total += 1;
+                const sourceFileProgressData: SourceFileProgressData = {
+                    filePath,
+                    sourceCode: fileSourceCode
+                };
                 const nodeSourceCode = node.getFullText();
                 const currentDetailGenerationOptions = detailGenerationOptions?.[kind];
                 const detailJSDocOptions = currentDetailGenerationOptions?.jsDocOptions;
@@ -113,15 +125,16 @@ export async function init(params: InitParams): Promise<void> {
                 });
                 const id = v4();
 
-                if (isCached) {
+                if (isCached && !disabledCached) {
                     return acc;
                 }
 
                 scheduler.runTask(async () => {
                     await sleep(0);
-                    onProgress?.({
-                        sourceFile,
-                        codeSnippet: node,
+
+                    return onProgress?.({
+                        sourceFile: sourceFileProgressData,
+                        codeSnippet: nodeSourceCode,
                         codeSnippetIndex: index,
                         sourceFileIndex: fileIndex,
                         totalFiles: sourceFiles.length,
@@ -129,7 +142,7 @@ export async function init(params: InitParams): Promise<void> {
                         isPending: isCached ? false : true,
                         isSuccess: true,
                         codeSnippetsInAllFiles: total,
-                        isCached: isCached,
+                        currentGeneralIndex,
                         id
                     });
                 });
@@ -138,7 +151,8 @@ export async function init(params: InitParams): Promise<void> {
                     jsDocGeneratorService: wrappedJSDocGeneratorService,
                     jsDocOptions,
                     node,
-                    sourceFile
+                    sourceFile,
+                    isSaveAfterEachIteration: isSaveAfterEachIteration || false
                 });
 
                 scheduler.runTask(async () => {
@@ -147,9 +161,12 @@ export async function init(params: InitParams): Promise<void> {
 
                         const value = await promise;
 
-                        onProgress?.({
-                            sourceFile,
-                            codeSnippet: node,
+                        return onProgress?.({
+                            sourceFile: {
+                                ...sourceFileProgressData,
+                                sourceCode: sourceFile.getFullText()
+                            },
+                            codeSnippet: node.getFullText(),
                             codeSnippetIndex: index,
                             sourceFileIndex: fileIndex,
                             totalFiles: sourceFiles.length,
@@ -158,15 +175,13 @@ export async function init(params: InitParams): Promise<void> {
                             isSuccess: true,
                             codeSnippetsInAllFiles: total,
                             response: value,
-                            isCached: false,
+                            currentGeneralIndex,
                             id
                         });
-
-                        await sleep(waitTimeBetweenProgressNotifications || 0);
                     } catch (error) {
-                        onProgress?.({
-                            sourceFile,
-                            codeSnippet: node,
+                        return onProgress?.({
+                            sourceFile: sourceFileProgressData,
+                            codeSnippet: nodeSourceCode,
                             codeSnippetIndex: index,
                             sourceFileIndex: fileIndex,
                             totalFiles: sourceFiles.length,
@@ -175,10 +190,10 @@ export async function init(params: InitParams): Promise<void> {
                             isSuccess: false,
                             codeSnippetsInAllFiles: total,
                             error,
-                            isCached: false,
+                            currentGeneralIndex,
                             id
                         });
-
+                    } finally {
                         await sleep(waitTimeBetweenProgressNotifications || 0);
                     }
                 });
@@ -190,9 +205,21 @@ export async function init(params: InitParams): Promise<void> {
         });
     });
 
-    await Promise.allSettled(jsDocNodePromises);
+    const iterationResult = await Promise.allSettled(jsDocNodePromises);
 
-    await project.save();
+    if (iterationResult.every((item) => item.status === 'rejected')) {
+        throw new AllJSDocIterationError(iterationResult);
+    }
+
+    await Promise.all(scheduler.promises);
+
+    if (!isSaveAfterEachIteration) {
+        await project.save();
+    }
+
+    if (disabledCached) {
+        return;
+    }
 
     const fileNodeSourceCodeList = sourceFiles.flatMap((sourceFile) => {
         const fileSourceCode = sourceFile.getFullText();

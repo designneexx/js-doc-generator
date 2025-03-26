@@ -253,6 +253,8 @@ export interface SetJSDocToNodeParams<CurrentNode extends ASTJSDocableNode = AST
      * для генерации JSDoc комментариев.
      */
     sourceFile: SourceFile;
+
+    isSaveAfterEachIteration?: boolean;
 }
 
 /**
@@ -287,13 +289,13 @@ export interface GenerationOptions {
      * Массив, содержащий виды синтаксических элементов, которые будут использоваться
      * при генерации. Каждый элемент массива является ключом из перечисления SyntaxKind.
      */
-    kinds: `${KindDeclarationNames}`[];
+    kinds?: `${KindDeclarationNames}`[] | null;
     /**
      * Опциональный объект, содержащий параметры для генерации JSDoc комментариев.
      * Может включать в себя различные настройки, влияющие на формат и содержание
      * генерируемых JSDoc комментариев.
      */
-    jsDocOptions?: JSDocOptions;
+    jsDocOptions?: JSDocOptions | null;
 }
 
 /**
@@ -306,17 +308,31 @@ export type DetailGenerationOptions = Partial<
 >;
 
 /**
+ * Интерфейс для данных о прогрессе обработки исходного файла.
+ */
+export interface SourceFileProgressData {
+    /**
+     * Путь к файлу.
+     */
+    filePath: string;
+    /**
+     * Исходный код файла.
+     */
+    sourceCode: string;
+}
+
+/**
  * Интерфейс для параметров прогресса
  */
 export interface ProgressParams {
     /**
      * Кодовый фрагмент
      */
-    codeSnippet: ASTJSDocableNode;
+    codeSnippet: string;
     /**
      * Исходный файл
      */
-    sourceFile: SourceFile;
+    sourceFile: SourceFileProgressData;
     /**
      * Общее количество файлов
      */
@@ -338,6 +354,10 @@ export interface ProgressParams {
      */
     codeSnippetIndex: number;
     /**
+     * Текущий общий индекс
+     */
+    currentGeneralIndex: number;
+    /**
      * Флаг успешности выполнения
      */
     isSuccess: boolean;
@@ -354,10 +374,6 @@ export interface ProgressParams {
      */
     response?: string;
     /**
-     * Флаг кэширования
-     */
-    isCached: boolean;
-    /**
      * Идентификатор
      */
     id: string;
@@ -370,23 +386,23 @@ export interface InitParams {
     /**
      * Опции для генерации кэша.
      */
-    cacheOptions?: FileSystemCacheOptions;
+    cacheOptions?: FileSystemCacheOptions | null;
     /**
      * Директория, в которой хранится кэш.
      */
-    cacheDir?: string;
+    cacheDir?: string | null;
     /**
      * Опции проекта, которые могут включать в себя настройки, специфичные для текущего проекта.
      *
      * @type {ProjectOptions}
      */
-    projectOptions?: ProjectOptions;
+    projectOptions?: Partial<ProjectOptions> | null;
     /**
      * Массив строк, представляющих пути к файлам, которые будут обрабатываться сервисом.
      *
      * @type {string[]}
      */
-    files: string[];
+    files?: string[] | null;
 
     /**
      * Сервис для генерации JSDoc.
@@ -396,19 +412,19 @@ export interface InitParams {
     /**
      * Глобальные опции генерации.
      */
-    globalGenerationOptions?: GenerationOptions;
+    globalGenerationOptions?: GenerationOptions | null;
 
     /**
      * Опции детальной генерации.
      */
-    detailGenerationOptions?: DetailGenerationOptions;
+    detailGenerationOptions?: DetailGenerationOptions | null;
 
     /**
      * Функция обратного вызова для отслеживания прогресса генерации.
      *
      * @param {ProgressParams} params Параметры прогресса.
      */
-    onProgress?: ((params: ProgressParams) => void) | null;
+    onProgress?: ((params: ProgressParams) => void | Promise<void>) | null;
 
     /**
      * Время ожидания между запросами.
@@ -419,6 +435,10 @@ export interface InitParams {
      * Время ожидания между уведомлениями о прогрессе.
      */
     waitTimeBetweenProgressNotifications?: number | null;
+
+    isSaveAfterEachIteration?: boolean | null;
+
+    disabledCached?: boolean | null;
 }
 
 /**
