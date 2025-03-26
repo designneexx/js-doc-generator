@@ -9,6 +9,7 @@ import {
     type InitParams
 } from '../types/common';
 import { AllJSDocIterationError } from './AllJSDocIterationError';
+import { FileCacheManagerMap } from './FileCacheManagerMap';
 import { createFileCacheManagerMap } from './helpers/createFileCacheManagerMap';
 import { createScheduler } from './helpers/createScheduler';
 import { saveJSDocProcessedInCache } from './helpers/saveJSDocsProcessedInCache';
@@ -41,7 +42,8 @@ export async function init(params: InitParams): Promise<void> {
         timeoutBetweenRequests,
         waitTimeBetweenProgressNotifications,
         isSaveAfterEachIteration = false,
-        disabledCached
+        disabledCached,
+        signal
     } = params;
     /**
      * @typedef {Object} FileNodeSourceCode - Информация о файле, узле и опциях JSDoc.
@@ -64,7 +66,9 @@ export async function init(params: InitParams): Promise<void> {
     /**
      * Создает карту менеджеров кэша для файлов.
      */
-    const fileCacheManagerMap = await createFileCacheManagerMap(cache);
+    const fileCacheManagerMap = disabledCached
+        ? new FileCacheManagerMap()
+        : await createFileCacheManagerMap(cache);
 
     const kinds = globalGenerationOptions?.kinds || [];
     const { jsDocOptions: globalJSDocOptions } = globalGenerationOptions || {};
@@ -89,8 +93,11 @@ export async function init(params: InitParams): Promise<void> {
     );
 
     let total = 0;
-    const scheduler = createScheduler<void>();
-    const jsDocGeneratorServiceScheduler = createScheduler<string>(timeoutBetweenRequests || 0);
+    const scheduler = createScheduler<void>(0, signal);
+    const jsDocGeneratorServiceScheduler = createScheduler<string>(
+        timeoutBetweenRequests || 0,
+        signal
+    );
     const wrappedJSDocGeneratorService: JSDocGeneratorService = scheduleJSDocGeneratorService(
         jsDocGeneratorService,
         timeoutBetweenRequests ? jsDocGeneratorServiceScheduler : null

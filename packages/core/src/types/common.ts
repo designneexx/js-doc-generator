@@ -439,6 +439,8 @@ export interface InitParams {
     isSaveAfterEachIteration?: boolean | null;
 
     disabledCached?: boolean | null;
+
+    signal?: AbortSignal | null;
 }
 
 /**

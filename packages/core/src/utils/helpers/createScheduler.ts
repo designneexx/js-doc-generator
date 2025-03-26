@@ -57,15 +57,25 @@ export interface Scheduler<T> {
  * @param {number} ms - Время ожидания в миллисекундах между выполнением задач (по умолчанию 0)
  * @returns {Scheduler} - Возвращает объект планировщика задач
  */
-export function createScheduler<T>(ms = 0): Scheduler<T> {
+export function createScheduler<T>(ms = 0, signal?: AbortSignal | null): Scheduler<T> {
     const queueSet = new Set<() => Promise<T>>();
     const promises: Promise<IteratorResult<TaskResult<T>>>[] = [];
+    let isAborted = false;
+
+    signal?.addEventListener('abort', () => {
+        isAborted = true;
+    });
+
     /**
      * Генератор, который поочередно выполняет задачи из очереди
      * @yields {TaskResult} - Результат выполнения задачи
      */
     async function* generator() {
         for (const callback of queueSet) {
+            if (isAborted) {
+                return;
+            }
+
             try {
                 const value = await callback();
 
@@ -95,7 +105,7 @@ export function createScheduler<T>(ms = 0): Scheduler<T> {
                 return iteratorResult.value as TaskResult<T>;
             }
 
-            throw new Error("Can't get task");
+            throw new Error('Scheduler is aborted');
         },
         promises
     };
