@@ -29,7 +29,7 @@ import { jsDocVariableStatementSetter } from './nodes/jsDocVariableStatementSett
  * Путь к каталогу кэша по умолчанию.
  * @type {string}
  */
-const DEFAULT_CACHE_DIR = './.cache';
+const DEFAULT_CACHE_DIR = '.cache';
 
 /**
  * Инициализирует процесс генерации JSDoc комментариев для указанных файлов и опций проекта.
@@ -65,12 +65,12 @@ export async function init(params: InitParams): Promise<void> {
      * @property {JSDocOptions} jsDocOptions - Опции JSDoc комментариев.
      */
     const cache = new Cache({
-        basePath: cacheDir || DEFAULT_CACHE_DIR, // (optional) Path where cache files are stored (default).
+        basePath: path.resolve(cacheDir || DEFAULT_CACHE_DIR), // (optional) Path where cache files are stored (default).
         ns: 'jsdocgen', // (optional) A grouping namespace for items.
         hash: 'sha1', // (optional) A hashing algorithm used within the cache key.
         ...cacheOptions
     });
-    const logFile = logsFilePath || path.join('.logs', 'debug.json');
+    const logFile = path.resolve(logsFilePath || path.join('.logs', 'debug.json'));
 
     if (isDeleteLogFileBeforeGeneration) {
         try {
