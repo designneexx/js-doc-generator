@@ -1,6 +1,7 @@
 import { Cache } from 'file-system-cache';
 import { Project, SyntaxKind } from 'ts-morph';
 import { v4 } from 'uuid';
+import winston from 'winston';
 import {
     FileNodeSourceCode,
     JSDocGeneratorService,
@@ -39,11 +40,15 @@ export async function init(params: InitParams): Promise<void> {
         cacheDir = DEFAULT_CACHE_DIR,
         cacheOptions,
         onProgress,
+        onError,
+        onSuccess,
         timeoutBetweenRequests,
         waitTimeBetweenProgressNotifications,
         isSaveAfterEachIteration = false,
         disabledCached,
-        signal
+        signal,
+        logsFilePath,
+        isSaveLogs = true
     } = params;
     /**
      * @typedef {Object} FileNodeSourceCode - Информация о файле, узле и опциях JSDoc.
@@ -57,6 +62,15 @@ export async function init(params: InitParams): Promise<void> {
         hash: 'sha1', // (optional) A hashing algorithm used within the cache key.
         ...cacheOptions
     });
+    const logFile = logsFilePath || './logs/combined.log';
+
+    const logger = winston.createLogger({
+        transports: [new winston.transports.Console()]
+    });
+
+    if (isSaveLogs) {
+        logger.add(new winston.transports.File({ filename: logFile }));
+    }
 
     /**
      * Создает новый объект проекта TypeScript.
@@ -146,8 +160,6 @@ export async function init(params: InitParams): Promise<void> {
                         sourceFileIndex: fileIndex,
                         totalFiles: sourceFiles.length,
                         codeSnippetsInFile: nodes.length,
-                        isPending: isCached ? false : true,
-                        isSuccess: true,
                         codeSnippetsInAllFiles: total,
                         currentGeneralIndex,
                         id
@@ -168,7 +180,7 @@ export async function init(params: InitParams): Promise<void> {
 
                         const value = await promise;
 
-                        return onProgress?.({
+                        const params = {
                             sourceFile: {
                                 ...sourceFileProgressData,
                                 sourceCode: sourceFile.getFullText()
@@ -178,28 +190,32 @@ export async function init(params: InitParams): Promise<void> {
                             sourceFileIndex: fileIndex,
                             totalFiles: sourceFiles.length,
                             codeSnippetsInFile: nodes.length,
-                            isPending: false,
-                            isSuccess: true,
                             codeSnippetsInAllFiles: total,
                             response: value,
                             currentGeneralIndex,
                             id
-                        });
+                        };
+
+                        logger.info(JSON.stringify(params, null, 2));
+
+                        return onSuccess?.(params);
                     } catch (error) {
-                        return onProgress?.({
+                        const params = {
                             sourceFile: sourceFileProgressData,
                             codeSnippet: nodeSourceCode,
                             codeSnippetIndex: index,
                             sourceFileIndex: fileIndex,
                             totalFiles: sourceFiles.length,
                             codeSnippetsInFile: nodes.length,
-                            isPending: false,
-                            isSuccess: false,
                             codeSnippetsInAllFiles: total,
                             error,
                             currentGeneralIndex,
                             id
-                        });
+                        };
+
+                        logger.error(params);
+
+                        return onError?.(params);
                     } finally {
                         await sleep(waitTimeBetweenProgressNotifications || 0);
                     }
@@ -214,7 +230,7 @@ export async function init(params: InitParams): Promise<void> {
 
     const iterationResult = await Promise.allSettled(jsDocNodePromises);
 
-    if (iterationResult.every((item) => item.status === 'rejected')) {
+    if (iterationResult.length > 0 && iterationResult.every((item) => item.status === 'rejected')) {
         throw new AllJSDocIterationError(iterationResult);
     }
 

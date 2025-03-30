@@ -323,6 +323,53 @@ export interface SourceFileProgressData {
     sourceCode: string;
 }
 
+export interface BaseProgressParams {
+    /**
+     * Кодовый фрагмент
+     */
+    codeSnippet: string;
+    /**
+     * Исходный файл
+     */
+    sourceFile: SourceFileProgressData;
+    /**
+     * Общее количество файлов
+     */
+    totalFiles: number;
+    /**
+     * Количество кодовых фрагментов в файле
+     */
+    codeSnippetsInFile: number;
+    /**
+     * Общее количество кодовых фрагментов во всех файлах
+     */
+    codeSnippetsInAllFiles: number;
+    /**
+     * Индекс исходного файла
+     */
+    sourceFileIndex: number;
+    /**
+     * Индекс кодового фрагмента
+     */
+    codeSnippetIndex: number;
+    /**
+     * Текущий общий индекс
+     */
+    currentGeneralIndex: number;
+    /**
+     * Идентификатор
+     */
+    id: string;
+}
+
+export interface OnSuccessParams extends BaseProgressParams {
+    response: string;
+}
+
+export interface OnErrorParams extends BaseProgressParams {
+    error: unknown;
+}
+
 /**
  * Интерфейс для параметров прогресса
  */
@@ -426,7 +473,11 @@ export interface InitParams {
      *
      * @param {ProgressParams} params Параметры прогресса.
      */
-    onProgress?: ((params: ProgressParams) => void | Promise<void>) | null;
+    onProgress?: ((params: BaseProgressParams) => void | Promise<void>) | null;
+
+    onSuccess?: ((params: OnSuccessParams) => void | Promise<void>) | null;
+
+    onError?: ((params: OnErrorParams) => void | Promise<void>) | null;
 
     /**
      * Время ожидания между запросами.
@@ -443,6 +494,10 @@ export interface InitParams {
     disabledCached?: boolean | null;
 
     signal?: AbortSignal | null;
+
+    logsFilePath?: string | null;
+
+    isSaveLogs?: boolean | null;
 }
 
 /**

@@ -12,6 +12,8 @@ export class AllJSDocIterationError extends Error {
         public readonly errorList: PromiseRejectedResult[],
         public readonly message = 'Ошибка при итерации по всем узлам во всех файлах'
     ) {
-        super(message);
+        super(
+            `${message}\n${errorList.map((item) => `${item.reason?.toString?.() || ''}`).join('\n')}`
+        );
     }
 }
