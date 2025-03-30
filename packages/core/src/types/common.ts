@@ -256,6 +256,13 @@ export interface SetJSDocToNodeParams<CurrentNode extends ASTJSDocableNode = AST
      */
     sourceFile: SourceFile;
 
+    /**
+     * Флаг указывающий, нужно ли сохранять после каждой итерации.
+     *
+     * @description
+     * Если установлен в true, то после каждой итерации генерации JSDoc комментариев
+     * будет производиться сохранение изменений.
+     */
     isSaveAfterEachIteration?: boolean;
 }
 
@@ -323,6 +330,9 @@ export interface SourceFileProgressData {
     sourceCode: string;
 }
 
+/**
+ * Интерфейс для параметров базового прогресса
+ */
 export interface BaseProgressParams {
     /**
      * Кодовый фрагмент
@@ -362,11 +372,23 @@ export interface BaseProgressParams {
     id: string;
 }
 
+/**
+ * Интерфейс, представляющий параметры успешного завершения операции
+ */
 export interface OnSuccessParams extends BaseProgressParams {
+    /**
+     * Ответ от операции в виде строки
+     */
     response: string;
 }
 
+/**
+ * Интерфейс, описывающий параметры ошибки.
+ */
 export interface OnErrorParams extends BaseProgressParams {
+    /**
+     * Объект ошибки, который может быть любого типа.
+     */
     error: unknown;
 }
 
@@ -475,8 +497,18 @@ export interface InitParams {
      */
     onProgress?: ((params: BaseProgressParams) => void | Promise<void>) | null;
 
+    /**
+     * Функция обратного вызова при успешном завершении генерации.
+     *
+     * @param {OnSuccessParams} params Параметры успешного завершения.
+     */
     onSuccess?: ((params: OnSuccessParams) => void | Promise<void>) | null;
 
+    /**
+     * Функция обратного вызова при возникновении ошибки в процессе генерации.
+     *
+     * @param {OnErrorParams} params Параметры ошибки.
+     */
     onError?: ((params: OnErrorParams) => void | Promise<void>) | null;
 
     /**
@@ -489,15 +521,32 @@ export interface InitParams {
      */
     waitTimeBetweenProgressNotifications?: number | null;
 
+    /**
+     * Флаг указывающий, нужно ли сохранять результат после каждой итерации.
+     */
     isSaveAfterEachIteration?: boolean | null;
 
+    /**
+     * Флаг указывающий, отключено ли кэширование.
+     */
     disabledCached?: boolean | null;
 
+    /**
+     * Сигнал для прерывания операции.
+     */
     signal?: AbortSignal | null;
 
+    /**
+     * Путь к файлу для сохранения логов.
+     */
     logsFilePath?: string | null;
 
+    /**
+     * Флаг указывающий, нужно ли сохранять логи.
+     */
     isSaveLogs?: boolean | null;
+
+    retries?: number | null;
 }
 
 /**

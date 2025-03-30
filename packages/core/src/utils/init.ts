@@ -23,6 +23,10 @@ import { jsDocInterfaceSetter } from './nodes/jsDocInterfaceSetter';
 import { jsDocTypeAliasSetter } from './nodes/jsDocTypeAliasSetter';
 import { jsDocVariableStatementSetter } from './nodes/jsDocVariableStatementSetter';
 
+/**
+ * Путь к каталогу кэша по умолчанию.
+ * @type {string}
+ */
 const DEFAULT_CACHE_DIR = './.cache';
 
 /**
@@ -48,7 +52,8 @@ export async function init(params: InitParams): Promise<void> {
         disabledCached,
         signal,
         logsFilePath,
-        isSaveLogs = true
+        isSaveLogs = true,
+        retries
     } = params;
     /**
      * @typedef {Object} FileNodeSourceCode - Информация о файле, узле и опциях JSDoc.
@@ -112,10 +117,29 @@ export async function init(params: InitParams): Promise<void> {
         timeoutBetweenRequests || 0,
         signal
     );
-    const wrappedJSDocGeneratorService: JSDocGeneratorService = scheduleJSDocGeneratorService(
+    const wrappedJSDocGeneratorService: JSDocGeneratorService = scheduleJSDocGeneratorService({
         jsDocGeneratorService,
-        timeoutBetweenRequests ? jsDocGeneratorServiceScheduler : null
-    );
+        jsDocGeneratorServiceScheduler: timeoutBetweenRequests
+            ? jsDocGeneratorServiceScheduler
+            : null,
+        retries: retries || 1,
+        notifySuccess(data, retries) {
+            if (retries > 1) {
+                logger.info(JSON.stringify({ isSuccess: true, retries, response: data }, null, 2));
+            }
+        },
+        notifyError(error, retries) {
+            if (retries > 1) {
+                logger.error(
+                    JSON.stringify(
+                        { isError: true, retries, error: error?.toString?.() || '' },
+                        null,
+                        2
+                    )
+                );
+            }
+        }
+    });
 
     const jsDocNodePromises = sourceFiles.flatMap((sourceFile, fileIndex) => {
         const fileSourceCode = sourceFile.getFullText();

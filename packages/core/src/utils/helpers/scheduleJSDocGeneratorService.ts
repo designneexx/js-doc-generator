@@ -1,5 +1,14 @@
 import { JSDocGeneratorService, JSDocGeneratorServiceOptions } from 'src/types/common';
-import { Scheduler } from './createScheduler';
+import { Scheduler, SuccessTask } from './createScheduler';
+import { retryAsyncRequest } from './retryAsyncRequest';
+
+export interface ScheduleJSDocGeneratorServiceParams {
+    jsDocGeneratorService: JSDocGeneratorService;
+    jsDocGeneratorServiceScheduler?: Scheduler<string> | null;
+    retries?: number;
+    notifySuccess?(data: string, retries: number): void;
+    notifyError?(error: unknown, retries: number): void;
+}
 
 /**
  * Генерирует обёртку вокруг сервиса генерации JSDoc.
@@ -8,9 +17,16 @@ import { Scheduler } from './createScheduler';
  * @returns {JSDocGeneratorService} Обёртка вокруг сервиса генерации JSDoc.
  */
 export function scheduleJSDocGeneratorService(
-    jsDocGeneratorService: JSDocGeneratorService,
-    jsDocGeneratorServiceScheduler?: Scheduler<string> | null
+    params: ScheduleJSDocGeneratorServiceParams
 ): JSDocGeneratorService {
+    const {
+        jsDocGeneratorService,
+        jsDocGeneratorServiceScheduler,
+        retries = 1,
+        notifyError,
+        notifySuccess
+    } = params;
+
     /**
      * Обёртка вокруг метода сервиса JSDocGeneratorService.
      * @param {keyof JSDocGeneratorService} key - Ключ метода сервиса JSDocGeneratorService.
@@ -19,9 +35,16 @@ export function scheduleJSDocGeneratorService(
     const wrapGetJsDocServiceMethod = (key: keyof JSDocGeneratorService) => {
         return async (params: JSDocGeneratorServiceOptions) => {
             if (jsDocGeneratorServiceScheduler) {
-                const result = await jsDocGeneratorServiceScheduler.runTask(() =>
-                    jsDocGeneratorService[key](params)
-                );
+                const result = await retryAsyncRequest({
+                    run: () =>
+                        jsDocGeneratorServiceScheduler.runTask(() =>
+                            jsDocGeneratorService[key](params)
+                        ),
+                    retries,
+                    notifySuccess: (result, currentRetries) =>
+                        notifySuccess?.((result as SuccessTask<string>).value, currentRetries),
+                    notifyError
+                });
 
                 if (result.success) {
                     return result.value;
