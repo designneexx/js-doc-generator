@@ -546,6 +546,9 @@ export interface InitParams {
      */
     isSaveLogs?: boolean | null;
 
+    /**
+     * Количество попыток повторения операции в случае неудачи.
+     */
     retries?: number | null;
 }
 

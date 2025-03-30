@@ -2,19 +2,36 @@ import { JSDocGeneratorService, JSDocGeneratorServiceOptions } from 'src/types/c
 import { Scheduler, SuccessTask } from './createScheduler';
 import { retryAsyncRequest } from './retryAsyncRequest';
 
+/**
+ * Параметры для службы генерации JSDoc расписания.
+ */
 export interface ScheduleJSDocGeneratorServiceParams {
+    /**
+     * Служба генерации JSDoc.
+     */
     jsDocGeneratorService: JSDocGeneratorService;
+    /**
+     * Планировщик для службы генерации JSDoc. Может быть null.
+     */
     jsDocGeneratorServiceScheduler?: Scheduler<string> | null;
+    /**
+     * Количество попыток повтора.
+     */
     retries?: number;
+    /**
+     * Функция уведомления об успешном завершении с передачей данных и количеством повторов.
+     */
     notifySuccess?(data: string, retries: number): void;
+    /**
+     * Функция уведомления об ошибке с передачей ошибки и количеством повторов.
+     */
     notifyError?(error: unknown, retries: number): void;
 }
 
 /**
- * Генерирует обёртку вокруг сервиса генерации JSDoc.
- * @param {JSDocGeneratorService} jsDocGeneratorService - Сервис генерации JSDoc.
- * @param {Scheduler | null} [jsDocGeneratorServiceScheduler] - Планировщик задач для сервиса генерации JSDoc (необязательный).
- * @returns {JSDocGeneratorService} Обёртка вокруг сервиса генерации JSDoc.
+ * Генератор JSDoc сервиса по расписанию.
+ * @param {ScheduleJSDocGeneratorServiceParams} params - Параметры для создания сервиса.
+ * @returns {JSDocGeneratorService} Обёрнутый сервис JSDocGeneratorService.
  */
 export function scheduleJSDocGeneratorService(
     params: ScheduleJSDocGeneratorServiceParams
