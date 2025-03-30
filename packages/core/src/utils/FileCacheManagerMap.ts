@@ -48,6 +48,11 @@ export class FileCacheManagerMap extends Map<string, Map<string, FileCacheHashMe
          * @returns Список кэшей
          */
         const entries = Array.from(this.entries());
+        /**
+         * Получает список кэшей из текущего хранилища
+         * @param {Array<[string, Map<string, FileCacheHashMetadata>]>} entry - элемент хранилища
+         * @returns {Array<FileCacheHashMetadata>} Список кэшей
+         */
         const savings = entries.flatMap(getCacheList);
 
         return cache.set(CACHE_KEY, savings);
@@ -61,6 +66,11 @@ export class FileCacheManagerMap extends Map<string, Map<string, FileCacheHashMe
     getCacheFromNodeSourceFile(
         fileNodeSourceCode: FileNodeSourceCode
     ): GetCacheFromNodeSourceFileReturn {
+        /**
+         * Получает кэш из исходного кода узла файла
+         * @param {FileNodeSourceCode} fileNodeSourceCode - объект с исходным кодом файла
+         * @returns {GetCacheFromNodeSourceFileReturn} Объект с данными кэша из исходного кода файла
+         */
         const { fileSourceCode, nodeSourceCode, jsDocOptions } = fileNodeSourceCode;
         const hashDigestCodeSnippet = sha1(nodeSourceCode);
         const hashDigestSourceCode = sha1(fileSourceCode);
@@ -77,6 +87,11 @@ export class FileCacheManagerMap extends Map<string, Map<string, FileCacheHashMe
      * @returns Результат проверки наличия узла в кэше
      */
     isNodeInCache(fileNodeSourceCode: FileNodeSourceCode): boolean {
+        /**
+         * Проверяет, содержится ли узел в кэше
+         * @param {FileNodeSourceCode} fileNodeSourceCode - объект с исходным кодом файла
+         * @returns {boolean} Результат проверки наличия узла в кэше
+         */
         const { jsDocOptions } = fileNodeSourceCode;
         const data = this.getCacheFromNodeSourceFile(fileNodeSourceCode);
         const { codeSnippetHashMap, hashCodeSnippet } = data;

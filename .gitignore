@@ -4,3 +4,5 @@ dist
 packages/*/dist
 lerna-debug.log
 .env
+.logs
+logs

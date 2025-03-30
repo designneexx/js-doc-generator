@@ -551,6 +551,9 @@ export interface InitParams {
      */
     retries?: number | null;
 
+    /**
+     * Флаг указывающий, нужно ли удалять лог-файл перед генерацией.
+     */
     isDeleteLogFileBeforeGeneration?: boolean | null;
 }
 
