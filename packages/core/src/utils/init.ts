@@ -11,10 +11,9 @@ import {
     SourceFileProgressData,
     type InitParams
 } from '../types/common';
-import { AllJSDocIterationError } from './AllJSDocIterationError';
 import { FileCacheManagerMap } from './FileCacheManagerMap';
 import { createFileCacheManagerMap } from './helpers/createFileCacheManagerMap';
-import { createScheduler } from './helpers/createScheduler';
+import { createScheduler, SuccessTask, TaskResult } from './helpers/createScheduler';
 import { saveJSDocProcessedInCache } from './helpers/saveJSDocsProcessedInCache';
 import { scheduleJSDocGeneratorService } from './helpers/scheduleJSDocGeneratorService';
 import { sleep } from './helpers/sleep';
@@ -70,14 +69,14 @@ export async function init(params: InitParams): Promise<void> {
         hash: 'sha1', // (optional) A hashing algorithm used within the cache key.
         ...cacheOptions
     });
-    const logFile = path.resolve(logsFilePath || path.join('.logs', 'debug.json'));
+    const logFile = path.resolve(logsFilePath || path.join('.logs', 'debug.log'));
 
     if (isDeleteLogFileBeforeGeneration) {
         try {
             await fsPromises.access(logFile);
             await fsPromises.unlink(logFile);
         } catch (error) {
-            console.log(error);
+            console.log('err', error);
         }
     }
 
@@ -124,7 +123,7 @@ export async function init(params: InitParams): Promise<void> {
     );
 
     let total = 0;
-    const scheduler = createScheduler<void>(0, signal);
+    const scheduler = createScheduler<FileNodeSourceCode>(0, signal);
     const jsDocGeneratorServiceScheduler = createScheduler<string>(
         timeoutBetweenRequests || 0,
         signal
@@ -172,101 +171,36 @@ export async function init(params: InitParams): Promise<void> {
             const { kind, setJSDocToNode } = jsDocNodeSetter;
             const nodes = sourceFile.getChildrenOfKind(SyntaxKind[kind]);
 
-            return nodes.reduce((acc, node, index) => {
-                const currentGeneralIndex = total;
-                total += 1;
-                const sourceFileProgressData: SourceFileProgressData = {
-                    filePath,
-                    sourceCode: fileSourceCode
-                };
-                const nodeSourceCode = node.getFullText();
-                const currentDetailGenerationOptions = detailGenerationOptions?.[kind];
-                const detailJSDocOptions = currentDetailGenerationOptions?.jsDocOptions;
-                const jsDocOptions: JSDocOptions = {
-                    ...globalJSDocOptions,
-                    ...detailJSDocOptions
-                };
-                const isCached = fileCacheManagerMap.isNodeInCache({
-                    fileSourceCode,
-                    nodeSourceCode,
-                    jsDocOptions
-                });
-                const id = v4();
-
-                if (isCached && !disabledCached) {
-                    return acc;
-                }
-
-                scheduler.runTask(async () => {
-                    await sleep(0);
-
-                    return onProgress?.({
-                        sourceFile: sourceFileProgressData,
-                        codeSnippet: nodeSourceCode,
-                        codeSnippetIndex: index,
-                        sourceFileIndex: fileIndex,
-                        totalFiles: sourceFiles.length,
-                        codeSnippetsInFile: nodes.length,
-                        codeSnippetsInAllFiles: total,
-                        currentGeneralIndex,
-                        id
+            return nodes.reduce(
+                (acc, node, index) => {
+                    const currentGeneralIndex = total;
+                    total += 1;
+                    const sourceFileProgressData: SourceFileProgressData = {
+                        filePath,
+                        sourceCode: fileSourceCode
+                    };
+                    const nodeSourceCode = node.getFullText();
+                    const currentDetailGenerationOptions = detailGenerationOptions?.[kind];
+                    const detailJSDocOptions = currentDetailGenerationOptions?.jsDocOptions;
+                    const jsDocOptions: JSDocOptions = {
+                        ...globalJSDocOptions,
+                        ...detailJSDocOptions
+                    };
+                    const isCached = fileCacheManagerMap.isNodeInCache({
+                        fileSourceCode,
+                        nodeSourceCode,
+                        jsDocOptions
                     });
-                });
+                    const id = v4();
 
-                const promise = setJSDocToNode({
-                    jsDocGeneratorService: wrappedJSDocGeneratorService,
-                    jsDocOptions,
-                    node,
-                    sourceFile,
-                    isSaveAfterEachIteration: isSaveAfterEachIteration || false
-                });
+                    if (isCached && !disabledCached) {
+                        return acc;
+                    }
 
-                scheduler.runTask(async () => {
-                    try {
-                        await sleep(waitTimeBetweenProgressNotifications || 0);
+                    scheduler.runTask(async () => {
+                        await sleep(0);
 
-                        const value = await promise;
-
-                        const newCodeSnippet = node.getFullText();
-                        const logParams = {
-                            codeSnippet: newCodeSnippet,
-                            response: value,
-                            sourceFilePath: filePath,
-                            lineNumbers: [node.getStartLineNumber(), node.getEndLineNumber()],
-                            kind,
-                            isError: false,
-                            isSuccess: true
-                        };
-                        const params = {
-                            sourceFile: {
-                                ...sourceFileProgressData,
-                                sourceCode: sourceFile.getFullText()
-                            },
-                            codeSnippet: newCodeSnippet,
-                            codeSnippetIndex: index,
-                            sourceFileIndex: fileIndex,
-                            totalFiles: sourceFiles.length,
-                            codeSnippetsInFile: nodes.length,
-                            codeSnippetsInAllFiles: total,
-                            response: value,
-                            currentGeneralIndex,
-                            id
-                        };
-
-                        logger.info(JSON.stringify(logParams, null, 2));
-
-                        return onSuccess?.(params);
-                    } catch (error) {
-                        const logParams = {
-                            codeSnippet: nodeSourceCode,
-                            error: error?.toString?.() || 'UNKNOWN_ERROR',
-                            sourceFilePath: filePath,
-                            lineNumbers: [node.getStartLineNumber(), node.getEndLineNumber()],
-                            kind,
-                            isError: true,
-                            isSuccess: false
-                        };
-                        const params = {
+                        await onProgress?.({
                             sourceFile: sourceFileProgressData,
                             codeSnippet: nodeSourceCode,
                             codeSnippetIndex: index,
@@ -274,33 +208,118 @@ export async function init(params: InitParams): Promise<void> {
                             totalFiles: sourceFiles.length,
                             codeSnippetsInFile: nodes.length,
                             codeSnippetsInAllFiles: total,
-                            error,
                             currentGeneralIndex,
                             id
+                        });
+
+                        return {
+                            fileSourceCode,
+                            nodeSourceCode,
+                            jsDocOptions
                         };
+                    });
 
-                        logger.error(logParams);
+                    const promise = setJSDocToNode({
+                        jsDocGeneratorService: wrappedJSDocGeneratorService,
+                        jsDocOptions,
+                        node,
+                        sourceFile,
+                        isSaveAfterEachIteration: isSaveAfterEachIteration || false
+                    });
 
-                        return onError?.(params);
-                    } finally {
-                        await sleep(waitTimeBetweenProgressNotifications || 0);
-                    }
-                });
+                    const scheduled = scheduler.runTask(async () => {
+                        try {
+                            await sleep(waitTimeBetweenProgressNotifications || 0);
 
-                acc.push(promise);
+                            const value = await promise;
 
-                return acc;
-            }, [] as Promise<string>[]);
+                            const newCodeSnippet = node.getFullText();
+                            const logParams = {
+                                codeSnippet: newCodeSnippet,
+                                response: value,
+                                sourceFilePath: filePath,
+                                lineNumbers: [node.getStartLineNumber(), node.getEndLineNumber()],
+                                kind,
+                                isError: false,
+                                isSuccess: true
+                            };
+                            const newFileSourceCode = sourceFile.getFullText();
+                            const params = {
+                                sourceFile: {
+                                    ...sourceFileProgressData,
+                                    sourceCode: fileSourceCode
+                                },
+                                codeSnippet: newCodeSnippet,
+                                codeSnippetIndex: index,
+                                sourceFileIndex: fileIndex,
+                                totalFiles: sourceFiles.length,
+                                codeSnippetsInFile: nodes.length,
+                                codeSnippetsInAllFiles: total,
+                                response: value,
+                                currentGeneralIndex,
+                                id
+                            };
+
+                            logger.info(JSON.stringify(logParams, null, 2));
+
+                            await onSuccess?.(params);
+
+                            return {
+                                fileSourceCode: newFileSourceCode,
+                                nodeSourceCode: newCodeSnippet,
+                                jsDocOptions
+                            };
+                        } catch (error) {
+                            const logParams = {
+                                codeSnippet: nodeSourceCode,
+                                error: error?.toString?.() || 'UNKNOWN_ERROR',
+                                sourceFilePath: filePath,
+                                lineNumbers: [node.getStartLineNumber(), node.getEndLineNumber()],
+                                kind,
+                                isError: true,
+                                isSuccess: false
+                            };
+                            const params = {
+                                sourceFile: sourceFileProgressData,
+                                codeSnippet: nodeSourceCode,
+                                codeSnippetIndex: index,
+                                sourceFileIndex: fileIndex,
+                                totalFiles: sourceFiles.length,
+                                codeSnippetsInFile: nodes.length,
+                                codeSnippetsInAllFiles: total,
+                                error,
+                                currentGeneralIndex,
+                                id
+                            };
+
+                            logger.error(logParams);
+
+                            await onError?.(params);
+
+                            return {
+                                fileSourceCode,
+                                nodeSourceCode: nodeSourceCode,
+                                jsDocOptions
+                            };
+                        } finally {
+                            await sleep(waitTimeBetweenProgressNotifications || 0);
+                        }
+                    });
+
+                    acc.push(scheduled);
+
+                    return acc;
+                },
+                [] as Promise<TaskResult<FileNodeSourceCode>>[]
+            );
         });
     });
 
     const iterationResult = await Promise.allSettled(jsDocNodePromises);
-
-    if (iterationResult.length > 0 && iterationResult.every((item) => item.status === 'rejected')) {
-        throw new AllJSDocIterationError(iterationResult);
-    }
-
-    await Promise.all(scheduler.promises);
+    const successResult = iterationResult.filter(
+        (item): item is PromiseFulfilledResult<SuccessTask<FileNodeSourceCode>> =>
+            item.status !== 'rejected' && item.value.success
+    );
 
     if (!isSaveAfterEachIteration) {
         await project.save();
@@ -310,31 +329,7 @@ export async function init(params: InitParams): Promise<void> {
         return;
     }
 
-    const fileNodeSourceCodeList = sourceFiles.flatMap((sourceFile) => {
-        const fileSourceCode = sourceFile.getFullText();
-
-        return allowedJsDocNodeSetterList.flatMap((jsDocNodeSetter) => {
-            const { kind } = jsDocNodeSetter;
-            const nodes = sourceFile.getChildrenOfKind(SyntaxKind[kind]);
-
-            return nodes.reduce((acc, node) => {
-                const currentDetailGenerationOptions = detailGenerationOptions?.[kind];
-                const detailJSDocOptions = currentDetailGenerationOptions?.jsDocOptions;
-                const jsDocOptions: JSDocOptions = {
-                    ...globalJSDocOptions,
-                    ...detailJSDocOptions
-                };
-
-                acc.push({
-                    fileSourceCode,
-                    nodeSourceCode: node.getFullText(),
-                    jsDocOptions
-                });
-
-                return acc;
-            }, [] as FileNodeSourceCode[]);
-        });
-    });
+    const fileNodeSourceCodeList = successResult.map((item) => item.value.value);
 
     /**
      * Сохраняет обработанные JSDoc комментарии в кэше.
