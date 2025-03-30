@@ -450,8 +450,21 @@ export interface ProgressParams {
     id: string;
 }
 
+/**
+ * Интерфейс Logger представляет собой контракт для объектов, способных логгировать информацию и ошибки.
+ */
 export interface Logger {
+    /**
+     * Метод info принимает сообщение типа string и возвращает строку.
+     * @param message - Сообщение для логгирования типа string.
+     * @returns Строка, представляющая логгированное информационное сообщение.
+     */
     info(message: string): string;
+    /**
+     * Метод error принимает сообщение типа string и возвращает строку.
+     * @param message - Сообщение об ошибке типа string.
+     * @returns Строка, представляющая логгированное сообщение об ошибке.
+     */
     error(message: string): string;
 }
 
@@ -561,6 +574,9 @@ export interface InitParams {
      */
     isDeleteLogFileBeforeGeneration?: boolean | null;
 
+    /**
+     * Логгер для записи логов.
+     */
     logger?: Logger | null;
 }
 
