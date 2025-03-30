@@ -125,14 +125,25 @@ export async function init(params: InitParams): Promise<void> {
         retries: retries || 1,
         notifySuccess(data, retries) {
             if (retries > 1) {
-                logger.info(JSON.stringify({ isSuccess: true, retries, response: data }, null, 2));
+                logger.info(
+                    JSON.stringify(
+                        { isSuccess: true, isError: false, retries, response: data },
+                        null,
+                        2
+                    )
+                );
             }
         },
         notifyError(error, retries) {
             if (retries > 1) {
                 logger.error(
                     JSON.stringify(
-                        { isError: true, retries, error: error?.toString?.() || '' },
+                        {
+                            isError: true,
+                            isSuccess: false,
+                            retries,
+                            error: error?.toString?.() || ''
+                        },
                         null,
                         2
                     )
