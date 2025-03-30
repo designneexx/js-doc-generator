@@ -55,7 +55,8 @@ export async function init(params: InitParams): Promise<void> {
         logsFilePath,
         isSaveLogs = true,
         retries,
-        isDeleteLogFileBeforeGeneration = true
+        isDeleteLogFileBeforeGeneration = true,
+        logger
     } = params;
     /**
      * @typedef {Object} FileNodeSourceCode - Информация о файле, узле и опциях JSDoc.
@@ -80,13 +81,15 @@ export async function init(params: InitParams): Promise<void> {
         }
     }
 
-    const logger = winston.createLogger({
+    const winstonLogger = winston.createLogger({
         transports: [new winston.transports.Console()]
     });
 
-    if (isSaveLogs) {
-        logger.add(new winston.transports.File({ filename: logFile }));
+    if (isSaveLogs && !logger) {
+        winstonLogger.add(new winston.transports.File({ filename: logFile }));
     }
+
+    const currentLogger = logger || winstonLogger;
 
     /**
      * Создает новый объект проекта TypeScript.
@@ -136,7 +139,7 @@ export async function init(params: InitParams): Promise<void> {
         retries: retries || 1,
         notifySuccess(data, retries) {
             if (retries > 1) {
-                logger.info(
+                currentLogger.info(
                     JSON.stringify(
                         { isSuccess: true, isError: false, retries, response: data },
                         null,
@@ -147,7 +150,7 @@ export async function init(params: InitParams): Promise<void> {
         },
         notifyError(error, retries) {
             if (retries > 1) {
-                logger.error(
+                currentLogger.error(
                     JSON.stringify(
                         {
                             isError: true,
@@ -260,7 +263,7 @@ export async function init(params: InitParams): Promise<void> {
                                 id
                             };
 
-                            logger.info(JSON.stringify(logParams, null, 2));
+                            currentLogger.info(JSON.stringify(logParams, null, 2));
 
                             await onSuccess?.(params);
 
@@ -292,7 +295,7 @@ export async function init(params: InitParams): Promise<void> {
                                 id
                             };
 
-                            logger.error(logParams);
+                            currentLogger.error(JSON.stringify(logParams, null, 2));
 
                             await onError?.(params);
 

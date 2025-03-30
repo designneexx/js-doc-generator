@@ -5,7 +5,6 @@ import {
 } from 'core/types/common';
 import { Node, type JSDocStructure, type JSDocTagStructure, type OptionalKind } from 'ts-morph';
 import { getJSDocStructure } from './getJSDocStructure';
-import { removeJSDoc } from './removeJSDoc';
 
 /**
  * Применяет JSDoc комментарии к узлу AST в соответствии с заданными параметрами.
@@ -74,7 +73,11 @@ export async function applyJSDoc<CurrentNode extends ASTJSDocableNode = ASTJSDoc
             data.tags = [];
         }
 
-        if (!data.description && !data.tags.length) {
+        if (
+            (!data.description ||
+                (typeof data.description === 'string' && !data.description.trim())) &&
+            !data.tags.length
+        ) {
             return acc;
         }
 
@@ -93,12 +96,19 @@ export async function applyJSDoc<CurrentNode extends ASTJSDocableNode = ASTJSDoc
     ) {
         const nodeJSDocs = deepNode.getJsDocs();
         const filteredJSDocs = jsDocsStructure.filter((_, index) => !nodeJSDocs[index]);
+        const isHaveDescription =
+            filteredJSDocs.length > 0 &&
+            filteredJSDocs.some(
+                (item) =>
+                    item.description ||
+                    (typeof item.description === 'string' && item.description.trim())
+            );
 
         if (isReplaceMode) {
-            nodeJSDocs.forEach(removeJSDoc);
+            nodeJSDocs.at(0)?.remove();
         }
 
-        if (prefixDescription) {
+        if (prefixDescription && isHaveDescription) {
             deepNode.addJsDoc({ description: prefixDescription });
         }
 
@@ -108,7 +118,7 @@ export async function applyJSDoc<CurrentNode extends ASTJSDocableNode = ASTJSDoc
             deepNode.addJsDocs(filteredJSDocs.slice(0, 1));
         }
 
-        if (postfixDescription) {
+        if (postfixDescription && isHaveDescription) {
             deepNode.addJsDoc({ description: postfixDescription });
         }
     }

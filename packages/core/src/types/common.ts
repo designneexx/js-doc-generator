@@ -450,6 +450,11 @@ export interface ProgressParams {
     id: string;
 }
 
+export interface Logger {
+    info(message: string): string;
+    error(message: string): string;
+}
+
 /**
  * Параметры инициализации для сервиса генерации JSDoc.
  */
@@ -555,6 +560,8 @@ export interface InitParams {
      * Флаг указывающий, нужно ли удалять лог-файл перед генерацией.
      */
     isDeleteLogFileBeforeGeneration?: boolean | null;
+
+    logger?: Logger | null;
 }
 
 /**
