@@ -1,3 +1,5 @@
+import fsPromises from 'fs/promises';
+import path from 'path';
 import { Cache } from 'file-system-cache';
 import { Project, SyntaxKind } from 'ts-morph';
 import { v4 } from 'uuid';
@@ -53,7 +55,8 @@ export async function init(params: InitParams): Promise<void> {
         signal,
         logsFilePath,
         isSaveLogs = true,
-        retries
+        retries,
+        isDeleteLogFileBeforeGeneration = true
     } = params;
     /**
      * @typedef {Object} FileNodeSourceCode - Информация о файле, узле и опциях JSDoc.
@@ -67,7 +70,16 @@ export async function init(params: InitParams): Promise<void> {
         hash: 'sha1', // (optional) A hashing algorithm used within the cache key.
         ...cacheOptions
     });
-    const logFile = logsFilePath || './logs/combined.log';
+    const logFile = logsFilePath || path.join('.logs', 'debug.json');
+
+    if (isDeleteLogFileBeforeGeneration) {
+        try {
+            await fsPromises.access(logFile);
+            await fsPromises.unlink(logFile);
+        } catch (error) {
+            console.log(error);
+        }
+    }
 
     const logger = winston.createLogger({
         transports: [new winston.transports.Console()]
@@ -215,12 +227,22 @@ export async function init(params: InitParams): Promise<void> {
 
                         const value = await promise;
 
+                        const newCodeSnippet = node.getFullText();
+                        const logParams = {
+                            codeSnippet: newCodeSnippet,
+                            response: value,
+                            sourceFilePath: filePath,
+                            lineNumbers: [node.getStartLineNumber(), node.getEndLineNumber()],
+                            kind,
+                            isError: false,
+                            isSuccess: true
+                        };
                         const params = {
                             sourceFile: {
                                 ...sourceFileProgressData,
                                 sourceCode: sourceFile.getFullText()
                             },
-                            codeSnippet: node.getFullText(),
+                            codeSnippet: newCodeSnippet,
                             codeSnippetIndex: index,
                             sourceFileIndex: fileIndex,
                             totalFiles: sourceFiles.length,
@@ -231,10 +253,19 @@ export async function init(params: InitParams): Promise<void> {
                             id
                         };
 
-                        logger.info(JSON.stringify(params, null, 2));
+                        logger.info(JSON.stringify(logParams, null, 2));
 
                         return onSuccess?.(params);
                     } catch (error) {
+                        const logParams = {
+                            codeSnippet: nodeSourceCode,
+                            error: error?.toString?.() || 'UNKNOWN_ERROR',
+                            sourceFilePath: filePath,
+                            lineNumbers: [node.getStartLineNumber(), node.getEndLineNumber()],
+                            kind,
+                            isError: true,
+                            isSuccess: false
+                        };
                         const params = {
                             sourceFile: sourceFileProgressData,
                             codeSnippet: nodeSourceCode,
@@ -248,7 +279,7 @@ export async function init(params: InitParams): Promise<void> {
                             id
                         };
 
-                        logger.error(params);
+                        logger.error(logParams);
 
                         return onError?.(params);
                     } finally {

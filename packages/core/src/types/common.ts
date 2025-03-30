@@ -550,6 +550,8 @@ export interface InitParams {
      * Количество попыток повторения операции в случае неудачи.
      */
     retries?: number | null;
+
+    isDeleteLogFileBeforeGeneration?: boolean | null;
 }
 
 /**
