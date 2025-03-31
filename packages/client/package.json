@@ -40,5 +40,6 @@
         "@auto-js-doc-generator/core": "^1.1.36",
         "axios": "^1.7.9",
         "dotenv": "^16.4.7"
-    }
+    },
+    "gitHead": "618bf5f8fe7c9a3dc1410ac3cfd349f4c3269488"
 }

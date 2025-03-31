@@ -50,5 +50,5 @@
         "esbuild": "^0.24.2",
         "winston": "^3.17.0"
     },
-    "gitHead": "8247b7dff3c0c2172ded8ba5da915b16f26a4933"
+    "gitHead": "618bf5f8fe7c9a3dc1410ac3cfd349f4c3269488"
 }
