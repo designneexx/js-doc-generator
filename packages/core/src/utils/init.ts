@@ -224,6 +224,10 @@ export async function init(params: InitParams): Promise<void> {
                                 id
                             };
 
+                            if (newCodeSnippet.trim() === nodeSourceCode.trim()) {
+                                throw new Error('Нет изменений по узлу после генерации');
+                            }
+
                             logger?.info?.(logParams);
 
                             await onSuccess?.(params);
@@ -262,7 +266,9 @@ export async function init(params: InitParams): Promise<void> {
                             await onError?.(params);
 
                             return {
-                                fileSourceCode,
+                                get fileSourceCode() {
+                                    return sourceFile.getFullText();
+                                },
                                 nodeSourceCode,
                                 jsDocOptions
                             };
