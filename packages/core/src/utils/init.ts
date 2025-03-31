@@ -49,12 +49,12 @@ export async function init(params: InitParams): Promise<void> {
         onProgress,
         onError,
         onSuccess,
-        timeoutBetweenRequests,
-        waitTimeBetweenProgressNotifications,
+        timeoutBetweenRequests = 0,
+        waitTimeBetweenProgressNotifications = 0,
         isSaveAfterEachIteration = false,
         disabledCached = false,
         signal,
-        retries,
+        retries = 1,
         logger
     } = params;
     /**
@@ -238,6 +238,7 @@ export async function init(params: InitParams): Promise<void> {
                                 kind
                             };
                         } catch (error) {
+                            const newFileSourceCode = sourceFile.getFullText();
                             const logParams: LoggerErrorParams = {
                                 codeSnippet: nodeSourceCode,
                                 error,
@@ -247,7 +248,10 @@ export async function init(params: InitParams): Promise<void> {
                                 generationWaitingTimeMs: endTime
                             };
                             const params = {
-                                sourceFile: sourceFileProgressData,
+                                sourceFile: {
+                                    ...sourceFileProgressData,
+                                    sourceCode: newFileSourceCode
+                                },
                                 codeSnippet: nodeSourceCode,
                                 codeSnippetIndex: index,
                                 sourceFileIndex: fileIndex,
