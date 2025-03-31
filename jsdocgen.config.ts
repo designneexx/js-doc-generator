@@ -13,5 +13,6 @@ export default {
         jsDocOptions: {
             mode: 1
         }
-    }
+    },
+    isSaveAfterEachIteration: true
 };

@@ -1,6 +1,6 @@
 import { JSDocGeneratorService, JSDocGeneratorServiceOptions } from 'src/types/common';
-import { Scheduler, SuccessTask } from './createScheduler';
-import { retryAsyncRequest } from './retryAsyncRequest';
+import { Scheduler } from './createScheduler';
+import { RetriedResponse, retryAsyncRequest } from './retryAsyncRequest';
 
 /**
  * Параметры для службы генерации JSDoc расписания.
@@ -18,15 +18,17 @@ export interface ScheduleJSDocGeneratorServiceParams {
      * Количество попыток повтора.
      */
     retries?: number;
-    /**
-     * Функция уведомления об успешном завершении с передачей данных и количеством повторов.
-     */
-    notifySuccess?(data: string, retries: number): void;
-    /**
-     * Функция уведомления об ошибке с передачей ошибки и количеством повторов.
-     */
-    notifyError?(error: unknown, retries: number): void;
 }
+
+/**
+ * Тип JSDocGeneratorServiceWithRetries представляет собой объект, который содержит асинхронные функции для генерации JSDoc с возможностью повторных попыток.
+ * Ключи объекта соответствуют ключам из типа JSDocGeneratorService, а значения - функциям, возвращающим Promise с результатом типа RetriedResponse<string>.
+ */
+export type JSDocGeneratorServiceWithRetries = {
+    [Key in keyof JSDocGeneratorService]: (
+        options: JSDocGeneratorServiceOptions
+    ) => Promise<RetriedResponse<string>>;
+};
 
 /**
  * Генератор JSDoc сервиса по расписанию.
@@ -35,14 +37,8 @@ export interface ScheduleJSDocGeneratorServiceParams {
  */
 export function scheduleJSDocGeneratorService(
     params: ScheduleJSDocGeneratorServiceParams
-): JSDocGeneratorService {
-    const {
-        jsDocGeneratorService,
-        jsDocGeneratorServiceScheduler,
-        retries = 1,
-        notifyError,
-        notifySuccess
-    } = params;
+): JSDocGeneratorServiceWithRetries {
+    const { jsDocGeneratorService, jsDocGeneratorServiceScheduler, retries = 1 } = params;
 
     /**
      * Обёртка вокруг метода сервиса JSDocGeneratorService.
@@ -57,23 +53,25 @@ export function scheduleJSDocGeneratorService(
                         jsDocGeneratorServiceScheduler.runTask(() =>
                             jsDocGeneratorService[key](params)
                         ),
-                    retries,
-                    notifySuccess: (result, currentRetries) =>
-                        notifySuccess?.((result as SuccessTask<string>).value, currentRetries),
-                    notifyError
+                    retries
                 });
 
-                if (result.success) {
-                    return result.value;
+                if (result.value.success) {
+                    return { retries: result.retries, value: result.value.value };
                 }
 
-                throw result.error;
+                throw result.value.error;
             }
 
-            return jsDocGeneratorService[key](params);
+            const result = await retryAsyncRequest({
+                run: () => jsDocGeneratorService[key](params),
+                retries
+            });
+
+            return result;
         };
     };
-    const wrappedJSDocGeneratorService: JSDocGeneratorService = {
+    const wrappedJSDocGeneratorService: JSDocGeneratorServiceWithRetries = {
         createJSDocClass: wrapGetJsDocServiceMethod('createJSDocClass'),
         createJSDocEnum: wrapGetJsDocServiceMethod('createJSDocEnum'),
         createJSDocFunction: wrapGetJsDocServiceMethod('createJSDocFunction'),

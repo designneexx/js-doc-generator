@@ -1,13 +1,12 @@
-import fsPromises from 'fs/promises';
 import path from 'path';
 import { Cache } from 'file-system-cache';
 import { Project, SyntaxKind } from 'ts-morph';
 import { v4 } from 'uuid';
-import winston from 'winston';
 import {
     FileNodeSourceCode,
-    JSDocGeneratorService,
     JSDocOptions,
+    LoggerErrorParams,
+    LoggerInfoParams,
     SourceFileProgressData,
     type InitParams
 } from '../types/common';
@@ -15,7 +14,10 @@ import { FileCacheManagerMap } from './FileCacheManagerMap';
 import { createFileCacheManagerMap } from './helpers/createFileCacheManagerMap';
 import { createScheduler, SuccessTask, TaskResult } from './helpers/createScheduler';
 import { saveJSDocProcessedInCache } from './helpers/saveJSDocsProcessedInCache';
-import { scheduleJSDocGeneratorService } from './helpers/scheduleJSDocGeneratorService';
+import {
+    JSDocGeneratorServiceWithRetries,
+    scheduleJSDocGeneratorService
+} from './helpers/scheduleJSDocGeneratorService';
 import { sleep } from './helpers/sleep';
 import { jsDocClassSetter } from './nodes/jsDocClassSetter';
 import { jsDocEnumSetter } from './nodes/jsDocEnumSetter';
@@ -52,10 +54,7 @@ export async function init(params: InitParams): Promise<void> {
         isSaveAfterEachIteration = false,
         disabledCached,
         signal,
-        logsFilePath,
-        isSaveLogs = true,
         retries,
-        isDeleteLogFileBeforeGeneration = true,
         logger
     } = params;
     /**
@@ -70,26 +69,6 @@ export async function init(params: InitParams): Promise<void> {
         hash: 'sha1', // (optional) A hashing algorithm used within the cache key.
         ...cacheOptions
     });
-    const logFile = path.resolve(logsFilePath || path.join('.logs', 'debug.log'));
-
-    if (isDeleteLogFileBeforeGeneration) {
-        try {
-            await fsPromises.access(logFile);
-            await fsPromises.unlink(logFile);
-        } catch (error) {
-            console.log('err', error);
-        }
-    }
-
-    const winstonLogger = winston.createLogger({
-        transports: [new winston.transports.Console()]
-    });
-
-    if (isSaveLogs && !logger) {
-        winstonLogger.add(new winston.transports.File({ filename: logFile }));
-    }
-
-    const currentLogger = logger || winstonLogger;
 
     /**
      * Создает новый объект проекта TypeScript.
@@ -131,40 +110,14 @@ export async function init(params: InitParams): Promise<void> {
         timeoutBetweenRequests || 0,
         signal
     );
-    const wrappedJSDocGeneratorService: JSDocGeneratorService = scheduleJSDocGeneratorService({
-        jsDocGeneratorService,
-        jsDocGeneratorServiceScheduler: timeoutBetweenRequests
-            ? jsDocGeneratorServiceScheduler
-            : null,
-        retries: retries || 1,
-        notifySuccess(data, retries) {
-            if (retries > 1) {
-                currentLogger.info(
-                    JSON.stringify(
-                        { isSuccess: true, isError: false, retries, response: data },
-                        null,
-                        2
-                    )
-                );
-            }
-        },
-        notifyError(error, retries) {
-            if (retries > 1) {
-                currentLogger.error(
-                    JSON.stringify(
-                        {
-                            isError: true,
-                            isSuccess: false,
-                            retries,
-                            error: error?.toString?.() || ''
-                        },
-                        null,
-                        2
-                    )
-                );
-            }
-        }
-    });
+    const wrappedJSDocGeneratorService: JSDocGeneratorServiceWithRetries =
+        scheduleJSDocGeneratorService({
+            jsDocGeneratorService,
+            jsDocGeneratorServiceScheduler: timeoutBetweenRequests
+                ? jsDocGeneratorServiceScheduler
+                : null,
+            retries: retries || 1
+        });
 
     const jsDocNodePromises = sourceFiles.flatMap((sourceFile, fileIndex) => {
         const fileSourceCode = sourceFile.getFullText();
@@ -222,6 +175,8 @@ export async function init(params: InitParams): Promise<void> {
                         };
                     });
 
+                    const startTime = performance.now();
+
                     const promise = setJSDocToNode({
                         jsDocGeneratorService: wrappedJSDocGeneratorService,
                         jsDocOptions,
@@ -234,17 +189,18 @@ export async function init(params: InitParams): Promise<void> {
                         try {
                             await sleep(waitTimeBetweenProgressNotifications || 0);
 
-                            const value = await promise;
-
+                            const { value, retries } = await promise;
                             const newCodeSnippet = node.getFullText();
-                            const logParams = {
-                                codeSnippet: newCodeSnippet,
+                            const currentTime = performance.now();
+
+                            const logParams: LoggerInfoParams = {
+                                codeSnippet: nodeSourceCode,
                                 response: value,
                                 sourceFilePath: filePath,
                                 lineNumbers: [node.getStartLineNumber(), node.getEndLineNumber()],
                                 kind,
-                                isError: false,
-                                isSuccess: true
+                                retries,
+                                requestsTimeoutMs: currentTime - startTime
                             };
                             const newFileSourceCode = sourceFile.getFullText();
                             const params = {
@@ -263,7 +219,7 @@ export async function init(params: InitParams): Promise<void> {
                                 id
                             };
 
-                            currentLogger.info(JSON.stringify(logParams, null, 2));
+                            logger?.info?.(logParams);
 
                             await onSuccess?.(params);
 
@@ -273,14 +229,14 @@ export async function init(params: InitParams): Promise<void> {
                                 jsDocOptions
                             };
                         } catch (error) {
-                            const logParams = {
+                            const currentTime = performance.now();
+                            const logParams: LoggerErrorParams = {
                                 codeSnippet: nodeSourceCode,
-                                error: error?.toString?.() || 'UNKNOWN_ERROR',
+                                error,
                                 sourceFilePath: filePath,
                                 lineNumbers: [node.getStartLineNumber(), node.getEndLineNumber()],
                                 kind,
-                                isError: true,
-                                isSuccess: false
+                                requestsTimeoutMs: currentTime - startTime
                             };
                             const params = {
                                 sourceFile: sourceFileProgressData,
@@ -295,7 +251,7 @@ export async function init(params: InitParams): Promise<void> {
                                 id
                             };
 
-                            currentLogger.error(JSON.stringify(logParams, null, 2));
+                            logger?.error?.(logParams);
 
                             await onError?.(params);
 

@@ -96,15 +96,9 @@ export async function applyJSDoc<CurrentNode extends ASTJSDocableNode = ASTJSDoc
     ) {
         const nodeJSDocs = deepNode.getJsDocs();
         const filteredJSDocs = jsDocsStructure.filter((_, index) => !nodeJSDocs[index]);
-        const isHaveDescription =
-            filteredJSDocs.length > 0 &&
-            filteredJSDocs.some(
-                (item) =>
-                    item.description ||
-                    (typeof item.description === 'string' && item.description.trim())
-            );
+        const isHaveDescription = filteredJSDocs.length > 0;
 
-        if (isReplaceMode) {
+        if (isReplaceMode && filteredJSDocs.length > 0) {
             nodeJSDocs.at(0)?.remove();
         }
 

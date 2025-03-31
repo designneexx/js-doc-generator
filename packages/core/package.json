@@ -47,8 +47,7 @@
         "crypto-js": "^4.2.0",
         "file-system-cache": "^3.0.0-alpha.8",
         "ts-morph": "^24.0.0",
-        "uuid": "^11.0.3",
-        "winston": "^3.17.0"
+        "uuid": "^11.0.3"
     },
     "gitHead": "8247b7dff3c0c2172ded8ba5da915b16f26a4933"
 }

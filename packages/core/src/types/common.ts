@@ -1,6 +1,8 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 //@ts-ignore
 import { type FileSystemCache } from 'file-system-cache';
+import { RetriedResponse } from 'src/utils/helpers/retryAsyncRequest';
+import { JSDocGeneratorServiceWithRetries } from 'src/utils/helpers/scheduleJSDocGeneratorService';
 import { JSDocableNode, SyntaxKind, Node, ts, SourceFile, type ProjectOptions } from 'ts-morph';
 
 /**
@@ -189,11 +191,9 @@ export interface JSDocGeneratorServiceOptions {
  */
 export interface GetJSDocableCodeSnippetParams {
     /**
-     * Сервис генерации JSDoc, используемый для создания JSDoc комментариев.
-     *
-     * @type {JSDocGeneratorService}
+     * Сервис для генерации JSDoc с возможностью повторных попыток.
      */
-    jsDocGeneratorService: JSDocGeneratorService;
+    jsDocGeneratorService: JSDocGeneratorServiceWithRetries;
     /**
      * Конфигурационные опции для настройки сервиса генерации JSDoc.
      *
@@ -216,7 +216,9 @@ export interface CreateJSDocNodeSetterParams<Kind extends KindDeclarationNames> 
      * @param params - Параметры для получения фрагмента кода.
      * @returns Фрагмент кода, к которому можно применить JSDoc.
      */
-    getJSDocableCodeSnippet(params: GetJSDocableCodeSnippetParams): Promise<string>;
+    getJSDocableCodeSnippet(
+        params: GetJSDocableCodeSnippetParams
+    ): Promise<RetriedResponse<string>>;
 }
 
 /**
@@ -231,14 +233,11 @@ export interface SetJSDocToNodeParams<CurrentNode extends ASTJSDocableNode = AST
      * необходимо сгенерировать и применить JSDoc комментарии.
      */
     node: CurrentNode;
+
     /**
-     * Сервис генерации JSDoc для указанных параметров и опций.
-     *
-     * @description
-     * Этот сервис отвечает за создание JSDoc комментариев на основе предоставленных
-     * параметров и опций, обеспечивая автоматизацию процесса документирования кода.
+     * Сервис генерации JSDoc с возможностью повторных попыток.
      */
-    jsDocGeneratorService: JSDocGeneratorService;
+    jsDocGeneratorService: JSDocGeneratorServiceWithRetries;
     /**
      * Частичные опции JSDoc для настройки генерации JSDoc.
      *
@@ -451,6 +450,56 @@ export interface ProgressParams {
 }
 
 /**
+ * Интерфейс параметров для логирования базового логгера.
+ */
+export interface BaseLoggerLogParams {
+    /**
+     * Фрагмент кода, который требуется залогировать.
+     */
+    codeSnippet: string;
+    /**
+     * Путь к файлу источнику, откуда был вызван логгер.
+     */
+    sourceFilePath: string;
+    /**
+     * Диапазон строк в коде, которые требуется залогировать.
+     */
+    lineNumbers: [number, number];
+    /**
+     * Вид объявления, к которому относится лог.
+     */
+    kind: KindDeclarationNames;
+    /**
+     * Время ожидания запросов в миллисекундах.
+     */
+    requestsTimeoutMs: number;
+}
+
+/**
+ * Интерфейс для параметров логирования информационного сообщения
+ */
+export interface LoggerInfoParams extends BaseLoggerLogParams {
+    /**
+     * Ответ, полученный в результате операции
+     */
+    response: string;
+    /**
+     * Количество попыток, предпринятых для выполнения операции
+     */
+    retries: number;
+}
+
+/**
+ * Интерфейс для параметров логирования ошибки.
+ */
+export interface LoggerErrorParams extends BaseLoggerLogParams {
+    /**
+     * Объект ошибки.
+     */
+    error: unknown;
+}
+
+/**
  * Интерфейс Logger представляет собой контракт для объектов, способных логгировать информацию и ошибки.
  */
 export interface Logger {
@@ -459,13 +508,13 @@ export interface Logger {
      * @param message - Сообщение для логгирования типа string.
      * @returns Строка, представляющая логгированное информационное сообщение.
      */
-    info(message: string): string;
+    info?: ((log: LoggerInfoParams) => string) | null;
     /**
      * Метод error принимает сообщение типа string и возвращает строку.
      * @param message - Сообщение об ошибке типа string.
      * @returns Строка, представляющая логгированное сообщение об ошибке.
      */
-    error(message: string): string;
+    error?: ((log: LoggerErrorParams) => string) | null;
 }
 
 /**
@@ -555,24 +604,9 @@ export interface InitParams {
     signal?: AbortSignal | null;
 
     /**
-     * Путь к файлу для сохранения логов.
-     */
-    logsFilePath?: string | null;
-
-    /**
-     * Флаг указывающий, нужно ли сохранять логи.
-     */
-    isSaveLogs?: boolean | null;
-
-    /**
      * Количество попыток повторения операции в случае неудачи.
      */
     retries?: number | null;
-
-    /**
-     * Флаг указывающий, нужно ли удалять лог-файл перед генерацией.
-     */
-    isDeleteLogFileBeforeGeneration?: boolean | null;
 
     /**
      * Логгер для записи логов.
@@ -645,7 +679,7 @@ export interface JSDocNodeSetter<Kind extends KindDeclarationNames = KindDeclara
      */
     setJSDocToNode<CurrentNode extends ASTJSDocableNode>(
         params: SetJSDocToNodeParams<CurrentNode>
-    ): Promise<string>;
+    ): Promise<RetriedResponse<string>>;
 }
 
 /**

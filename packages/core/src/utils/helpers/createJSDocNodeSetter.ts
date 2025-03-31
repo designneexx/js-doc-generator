@@ -11,6 +11,7 @@ import { cloneNodeAsFileFactory } from './cloneNodeAsFileFactory';
 import { getJSDocableNodesFromCodeSnippet } from './getJSDocableNodesFromCodeSnippet';
 import { getMinifySourceCode } from './getMinifySourceCode';
 import { isProjectDependency } from './isProjectDependency';
+import { RetriedResponse } from './retryAsyncRequest';
 
 /**
  * Создает функцию-установщик JSDoc для узла AST определенного типа.
@@ -29,7 +30,7 @@ export function createJSDocNodeSetter<Kind extends KindDeclarationNames>(
         kind,
         setJSDocToNode: async <CurrentNode extends ASTJSDocableNode>(
             params: SetJSDocToNodeParams<CurrentNode>
-        ): Promise<string> => {
+        ): Promise<RetriedResponse<string>> => {
             const {
                 jsDocGeneratorService,
                 node,
@@ -47,7 +48,7 @@ export function createJSDocNodeSetter<Kind extends KindDeclarationNames>(
                 .map(getMinifySourceCode);
             const minifiedSourceFile = getMinifySourceCode(clonedSourceFile);
 
-            const jsDocCodeSnippet = await getJSDocableCodeSnippet({
+            const response = await getJSDocableCodeSnippet({
                 jsDocGeneratorService,
                 jsDocGeneratorServiceOptions: {
                     codeSnippet,
@@ -55,6 +56,11 @@ export function createJSDocNodeSetter<Kind extends KindDeclarationNames>(
                     referencedSourceFiles: referencedMinifiedSourceCode
                 }
             });
+            const { value: jsDocCodeSnippet } = response;
+
+            if (typeof jsDocCodeSnippet !== 'string') {
+                throw new Error(`Полученный ответ от сервиса не является строкой`);
+            }
 
             const jsDocableNodes = getJSDocableNodesFromCodeSnippet(jsDocCodeSnippet);
 
@@ -70,7 +76,7 @@ export function createJSDocNodeSetter<Kind extends KindDeclarationNames>(
                 await sourceFile.save();
             }
 
-            return jsDocCodeSnippet;
+            return response;
         }
     };
 }

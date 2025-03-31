@@ -10,7 +10,15 @@ import { SourceFile } from 'ts-morph';
 export function getMinifySourceCode(sourceFile: SourceFile): SerializedSourceFile {
     sourceFile.formatText(formatCodeSettings);
 
+    /**
+     * Получаем исходный код из файла
+     * @type {string}
+     */
     const sourceCode = sourceFile.getText();
+    /**
+     * Получаем путь к файлу
+     * @type {string}
+     */
     const filePath = sourceFile.getFilePath();
 
     return { sourceCode, filePath };

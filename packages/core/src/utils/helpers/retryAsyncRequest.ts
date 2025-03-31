@@ -12,18 +12,21 @@ interface RetryAsyncRequestParams<T> {
      * Количество попыток повтора запроса в случае ошибки (по умолчанию 1)
      */
     retries?: number;
+}
+
+/**
+ * Интерфейс RetriedResponse представляет собой объект, содержащий информацию о количестве попыток и значении.
+ * @template T - обобщенный тип значения
+ */
+export interface RetriedResponse<T> {
     /**
-     * Функция обратного вызова, вызываемая при успешном выполнении запроса
-     * @param data - данные типа T, полученные из запроса
-     * @param retries - количество попыток, затраченных на выполнение запроса
+     * Количество попыток, которые были предприняты для получения значения.
      */
-    notifySuccess?(data: T, retries: number): void;
+    retries: number;
     /**
-     * Функция обратного вызова, вызываемая при возникновении ошибки при выполнении запроса
-     * @param error - ошибка, полученная при выполнении запроса
-     * @param retries - количество попыток, затраченных на выполнение запроса
+     * Значение, полученное после попыток.
      */
-    notifyError?(error: unknown, retries: number): void;
+    value: T;
 }
 
 /**
@@ -32,18 +35,19 @@ interface RetryAsyncRequestParams<T> {
  * @param {RetryAsyncRequestParams<T>} params - Параметры для повтора запроса
  * @returns {Promise<T>} - Промис с результатом запроса
  */
-export async function retryAsyncRequest<T>(params: RetryAsyncRequestParams<T>): Promise<T> {
-    const { run, retries = 1, notifyError, notifySuccess } = params;
+export async function retryAsyncRequest<T>(
+    params: RetryAsyncRequestParams<T>
+): Promise<RetriedResponse<T>> {
+    const { run, retries = 1 } = params;
     let lastValue: T | null = null;
     let lastError: unknown = null;
+    let i = 1;
 
-    for (let i = 1; i <= retries; i++) {
+    for (; i <= retries; i++) {
         try {
             const data = await run();
             lastValue = data;
             lastError = null;
-
-            notifySuccess?.(data, i);
 
             break;
         } catch (error) {
@@ -52,10 +56,8 @@ export async function retryAsyncRequest<T>(params: RetryAsyncRequestParams<T>): 
     }
 
     if (lastError === null) {
-        return lastValue as T;
+        return { retries: i, value: lastValue as T };
     }
-
-    notifyError?.(lastError, retries);
 
     throw lastError;
 }
