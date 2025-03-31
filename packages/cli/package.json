@@ -1,6 +1,6 @@
 {
     "name": "@auto-js-doc-generator/cli",
-    "version": "1.0.40",
+    "version": "1.0.41",
     "scripts": {
         "lint:check": "eslint src",
         "lint:write": "eslint src --fix",
@@ -43,8 +43,8 @@
         "path": "cz-conventional-changelog"
     },
     "dependencies": {
-        "@auto-js-doc-generator/client": "^1.0.29",
-        "@auto-js-doc-generator/core": "^1.1.39",
+        "@auto-js-doc-generator/client": "^1.0.30",
+        "@auto-js-doc-generator/core": "^1.1.40",
         "chalk": "^5.4.1",
         "commander": "^12.1.0",
         "esbuild": "^0.24.2",
