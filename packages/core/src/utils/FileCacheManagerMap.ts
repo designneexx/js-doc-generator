@@ -97,7 +97,7 @@ export class FileCacheManagerMap extends Map<string, Map<string, FileCacheHashMe
          * @param {FileNodeSourceCode} fileNodeSourceCode - объект с исходным кодом файла
          * @returns {boolean} Результат проверки наличия узла в кэше
          */
-        const { jsDocOptions } = fileNodeSourceCode;
+        // const { jsDocOptions } = fileNodeSourceCode;
         /**
          * Проверяет, содержится ли узел в кэше
          * @param {FileNodeSourceCode} fileNodeSourceCode - объект с исходным кодом файла
@@ -105,12 +105,8 @@ export class FileCacheManagerMap extends Map<string, Map<string, FileCacheHashMe
          */
         const data = this.getCacheFromNodeSourceFile(fileNodeSourceCode);
         const { codeSnippetHashMap, hashCodeSnippet } = data;
-        const fileCacheHashMetadata = codeSnippetHashMap.get(hashCodeSnippet);
+        // const fileCacheHashMetadata = codeSnippetHashMap.get(hashCodeSnippet);
 
-        return (
-            codeSnippetHashMap.has(hashCodeSnippet) &&
-            JSON.stringify(fileCacheHashMetadata?.jsDocOptions || {}) ===
-                JSON.stringify(jsDocOptions)
-        );
+        return codeSnippetHashMap.has(hashCodeSnippet);
     }
 }

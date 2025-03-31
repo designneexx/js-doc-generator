@@ -8,6 +8,9 @@ import { SourceFile } from 'ts-morph';
  * @returns {SerializedSourceFile} - Сериализованный исходный файл с минифицированным кодом и путем к файлу.
  */
 export function getMinifySourceCode(sourceFile: SourceFile): SerializedSourceFile {
+    /**
+     * Форматирует текст исходного файла с использованием настроек форматирования кода
+     */
     sourceFile.formatText(formatCodeSettings);
 
     /**

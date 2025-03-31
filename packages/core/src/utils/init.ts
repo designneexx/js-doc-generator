@@ -12,7 +12,7 @@ import {
 } from '../types/common';
 import { FileCacheManagerMap } from './FileCacheManagerMap';
 import { createFileCacheManagerMap } from './helpers/createFileCacheManagerMap';
-import { createScheduler, SuccessTask, TaskResult } from './helpers/createScheduler';
+import { createScheduler, TaskResult } from './helpers/createScheduler';
 import { saveJSDocProcessedInCache } from './helpers/saveJSDocsProcessedInCache';
 import {
     JSDocGeneratorServiceWithRetries,
@@ -286,11 +286,11 @@ export async function init(params: InitParams): Promise<void> {
         });
     });
 
-    const iterationResult = await Promise.allSettled(jsDocNodePromises);
-    const successResult = iterationResult.filter(
-        (item): item is PromiseFulfilledResult<SuccessTask<FileNodeSourceCode>> =>
-            item.status !== 'rejected' && item.value.success
-    );
+    await Promise.allSettled(jsDocNodePromises);
+    // const successResult = iterationResult.filter(
+    //     (item): item is PromiseFulfilledResult<SuccessTask<FileNodeSourceCode>> =>
+    //         item.status !== 'rejected' && item.value.success
+    // );
 
     if (!isSaveAfterEachIteration) {
         await project.save();
@@ -300,8 +300,31 @@ export async function init(params: InitParams): Promise<void> {
         return;
     }
 
-    const fileNodeSourceCodeList = successResult.map((item) => item.value.value);
+    const fileNodeSourceCodeList = sourceFiles.flatMap((sourceFile) => {
+        const fileSourceCode = sourceFile.getFullText();
 
+        return allowedJsDocNodeSetterList.flatMap((jsDocNodeSetter) => {
+            const { kind } = jsDocNodeSetter;
+            const nodes = sourceFile.getChildrenOfKind(SyntaxKind[kind]);
+
+            return nodes.reduce((acc, node) => {
+                const currentDetailGenerationOptions = detailGenerationOptions?.[kind];
+                const detailJSDocOptions = currentDetailGenerationOptions?.jsDocOptions;
+                const jsDocOptions: JSDocOptions = {
+                    ...globalJSDocOptions,
+                    ...detailJSDocOptions
+                };
+
+                acc.push({
+                    fileSourceCode,
+                    nodeSourceCode: node.getFullText(),
+                    jsDocOptions
+                });
+
+                return acc;
+            }, [] as FileNodeSourceCode[]);
+        });
+    });
     /**
      * Сохраняет обработанные JSDoc комментарии в кэше.
      */
