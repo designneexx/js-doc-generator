@@ -52,7 +52,7 @@ export async function init(params: InitParams): Promise<void> {
         timeoutBetweenRequests,
         waitTimeBetweenProgressNotifications,
         isSaveAfterEachIteration = false,
-        disabledCached,
+        disabledCached = false,
         signal,
         retries,
         logger
