@@ -3,7 +3,7 @@ import { Cache } from 'file-system-cache';
 import { Project, SyntaxKind } from 'ts-morph';
 import { v4 } from 'uuid';
 import {
-    FileNodeSourceCode,
+    JSDocGenerationInfo,
     JSDocOptions,
     LoggerErrorParams,
     LoggerInfoParams,
@@ -12,7 +12,7 @@ import {
 } from '../types/common';
 import { FileCacheManagerMap } from './FileCacheManagerMap';
 import { createFileCacheManagerMap } from './helpers/createFileCacheManagerMap';
-import { createScheduler, TaskResult } from './helpers/createScheduler';
+import { createScheduler, SuccessTask, TaskResult } from './helpers/createScheduler';
 import { saveJSDocProcessedInCache } from './helpers/saveJSDocsProcessedInCache';
 import {
     JSDocGeneratorServiceWithRetries,
@@ -105,7 +105,7 @@ export async function init(params: InitParams): Promise<void> {
     );
 
     let total = 0;
-    const scheduler = createScheduler<FileNodeSourceCode>(0, signal);
+    const scheduler = createScheduler<JSDocGenerationInfo>(0, signal);
     const jsDocGeneratorServiceScheduler = createScheduler<string>(
         timeoutBetweenRequests || 0,
         signal
@@ -169,9 +169,9 @@ export async function init(params: InitParams): Promise<void> {
                         });
 
                         return {
-                            fileSourceCode,
-                            nodeSourceCode,
-                            jsDocOptions
+                            sourceFile,
+                            node,
+                            kind
                         };
                     });
 
@@ -233,11 +233,9 @@ export async function init(params: InitParams): Promise<void> {
                             await onSuccess?.(params);
 
                             return {
-                                get fileSourceCode() {
-                                    return sourceFile.getFullText();
-                                },
-                                nodeSourceCode: newCodeSnippet,
-                                jsDocOptions
+                                sourceFile,
+                                node,
+                                kind
                             };
                         } catch (error) {
                             const logParams: LoggerErrorParams = {
@@ -266,11 +264,9 @@ export async function init(params: InitParams): Promise<void> {
                             await onError?.(params);
 
                             return {
-                                get fileSourceCode() {
-                                    return sourceFile.getFullText();
-                                },
-                                nodeSourceCode,
-                                jsDocOptions
+                                sourceFile,
+                                node,
+                                kind
                             };
                         } finally {
                             await sleep(waitTimeBetweenProgressNotifications || 0);
@@ -281,16 +277,16 @@ export async function init(params: InitParams): Promise<void> {
 
                     return acc;
                 },
-                [] as Promise<TaskResult<FileNodeSourceCode>>[]
+                [] as Promise<TaskResult<JSDocGenerationInfo>>[]
             );
         });
     });
 
-    await Promise.allSettled(jsDocNodePromises);
-    // const successResult = iterationResult.filter(
-    //     (item): item is PromiseFulfilledResult<SuccessTask<FileNodeSourceCode>> =>
-    //         item.status !== 'rejected' && item.value.success
-    // );
+    const iterationResult = await Promise.allSettled(jsDocNodePromises);
+    const successResult = iterationResult.filter(
+        (item): item is PromiseFulfilledResult<SuccessTask<JSDocGenerationInfo>> =>
+            item.status !== 'rejected' && item.value.success
+    );
 
     if (!isSaveAfterEachIteration) {
         await project.save();
@@ -300,31 +296,28 @@ export async function init(params: InitParams): Promise<void> {
         return;
     }
 
-    const fileNodeSourceCodeList = sourceFiles.flatMap((sourceFile) => {
+    const fileNodeSourceCodeList = successResult.map((item) => {
+        const data = item.value.value;
+        const { sourceFile, node, kind } = data;
         const fileSourceCode = sourceFile.getFullText();
+        const currentDetailGenerationOptions = detailGenerationOptions?.[kind];
+        const detailJSDocOptions = currentDetailGenerationOptions?.jsDocOptions;
+        const jsDocOptions: JSDocOptions = {
+            ...globalJSDocOptions,
+            ...detailJSDocOptions
+        };
 
-        return allowedJsDocNodeSetterList.flatMap((jsDocNodeSetter) => {
-            const { kind } = jsDocNodeSetter;
-            const nodes = sourceFile.getChildrenOfKind(SyntaxKind[kind]);
-
-            return nodes.reduce((acc, node) => {
-                const currentDetailGenerationOptions = detailGenerationOptions?.[kind];
-                const detailJSDocOptions = currentDetailGenerationOptions?.jsDocOptions;
-                const jsDocOptions: JSDocOptions = {
-                    ...globalJSDocOptions,
-                    ...detailJSDocOptions
-                };
-
-                acc.push({
-                    fileSourceCode,
-                    nodeSourceCode: node.getFullText(),
-                    jsDocOptions
-                });
-
-                return acc;
-            }, [] as FileNodeSourceCode[]);
-        });
+        return {
+            fileSourceCode,
+            nodeSourceCode: node.getFullText(),
+            jsDocOptions
+        };
     });
+
+    if (fileNodeSourceCodeList.length === 0) {
+        return;
+    }
+
     /**
      * Сохраняет обработанные JSDoc комментарии в кэше.
      */

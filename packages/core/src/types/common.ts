@@ -701,3 +701,21 @@ export interface FileNodeSourceCode {
      */
     jsDocOptions: JSDocOptions;
 }
+
+/**
+ * Информация, необходимая для генерации JSDoc комментариев.
+ */
+export interface JSDocGenerationInfo {
+    /**
+     * Файл исходного кода, к которому относится узел.
+     */
+    sourceFile: SourceFile;
+    /**
+     * Узел (Node) в абстрактном синтаксическом дереве (AST).
+     */
+    node: Node;
+    /**
+     * Тип объявления (например, переменная, функция, класс).
+     */
+    kind: KindDeclarationNames;
+}

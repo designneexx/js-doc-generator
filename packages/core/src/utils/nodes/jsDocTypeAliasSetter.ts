@@ -15,6 +15,10 @@ export const jsDocTypeAliasSetter: JSDocNodeSetter<KindDeclarationNames.TypeAlia
          * @returns {string} - Code snippet with JSDoc for TypeAliasDeclaration.
          */
         async getJSDocableCodeSnippet(params) {
+            /**
+             * Destructuring parameters for easier access.
+             * @type {JSDocableCodeSnippetParams}
+             */
             const { jsDocGeneratorService, jsDocGeneratorServiceOptions } = params;
 
             return jsDocGeneratorService.createJSDocTypeAlias(jsDocGeneratorServiceOptions);
