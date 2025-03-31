@@ -176,6 +176,7 @@ export async function init(params: InitParams): Promise<void> {
                     });
 
                     const startTime = performance.now();
+                    let endTime = startTime;
 
                     const promise = setJSDocToNode({
                         jsDocGeneratorService: wrappedJSDocGeneratorService,
@@ -185,13 +186,18 @@ export async function init(params: InitParams): Promise<void> {
                         isSaveAfterEachIteration: isSaveAfterEachIteration || false
                     });
 
+                    promise.then(() => {
+                        const currentTime = performance.now();
+
+                        endTime = currentTime - startTime;
+                    });
+
                     const scheduled = scheduler.runTask(async () => {
                         try {
                             await sleep(waitTimeBetweenProgressNotifications || 0);
 
                             const { value, retries } = await promise;
                             const newCodeSnippet = node.getFullText();
-                            const currentTime = performance.now();
 
                             const logParams: LoggerInfoParams = {
                                 codeSnippet: nodeSourceCode,
@@ -200,7 +206,7 @@ export async function init(params: InitParams): Promise<void> {
                                 lineNumbers: [node.getStartLineNumber(), node.getEndLineNumber()],
                                 kind,
                                 retries,
-                                requestsTimeoutMs: currentTime - startTime
+                                generationWaitingTimeMs: endTime
                             };
                             const newFileSourceCode = sourceFile.getFullText();
                             const params = {
@@ -229,14 +235,13 @@ export async function init(params: InitParams): Promise<void> {
                                 jsDocOptions
                             };
                         } catch (error) {
-                            const currentTime = performance.now();
                             const logParams: LoggerErrorParams = {
                                 codeSnippet: nodeSourceCode,
                                 error,
                                 sourceFilePath: filePath,
                                 lineNumbers: [node.getStartLineNumber(), node.getEndLineNumber()],
                                 kind,
-                                requestsTimeoutMs: currentTime - startTime
+                                generationWaitingTimeMs: endTime
                             };
                             const params = {
                                 sourceFile: sourceFileProgressData,

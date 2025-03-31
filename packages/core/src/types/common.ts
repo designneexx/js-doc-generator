@@ -469,10 +469,11 @@ export interface BaseLoggerLogParams {
      * Вид объявления, к которому относится лог.
      */
     kind: KindDeclarationNames;
+
     /**
-     * Время ожидания запросов в миллисекундах.
+     * Время ожидания генерации в миллисекундах.
      */
-    requestsTimeoutMs: number;
+    generationWaitingTimeMs: number;
 }
 
 /**
@@ -508,13 +509,13 @@ export interface Logger {
      * @param message - Сообщение для логгирования типа string.
      * @returns Строка, представляющая логгированное информационное сообщение.
      */
-    info?: ((log: LoggerInfoParams) => string) | null;
+    info?: ((log: LoggerInfoParams) => void) | null;
     /**
      * Метод error принимает сообщение типа string и возвращает строку.
      * @param message - Сообщение об ошибке типа string.
      * @returns Строка, представляющая логгированное сообщение об ошибке.
      */
-    error?: ((log: LoggerErrorParams) => string) | null;
+    error?: ((log: LoggerErrorParams) => void) | null;
 }
 
 /**
