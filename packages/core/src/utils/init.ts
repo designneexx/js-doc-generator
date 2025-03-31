@@ -198,7 +198,7 @@ export async function init(params: InitParams): Promise<void> {
 
                             const { value, retries } = await promise;
                             const newCodeSnippet = node.getFullText();
-
+                            const newFileSourceCode = sourceFile.getFullText();
                             const logParams: LoggerInfoParams = {
                                 codeSnippet: nodeSourceCode,
                                 response: value,
@@ -208,11 +208,10 @@ export async function init(params: InitParams): Promise<void> {
                                 retries,
                                 generationWaitingTimeMs: endTime
                             };
-                            const newFileSourceCode = sourceFile.getFullText();
                             const params = {
                                 sourceFile: {
                                     ...sourceFileProgressData,
-                                    sourceCode: fileSourceCode
+                                    sourceCode: newFileSourceCode
                                 },
                                 codeSnippet: newCodeSnippet,
                                 codeSnippetIndex: index,
@@ -230,7 +229,9 @@ export async function init(params: InitParams): Promise<void> {
                             await onSuccess?.(params);
 
                             return {
-                                fileSourceCode: newFileSourceCode,
+                                get fileSourceCode() {
+                                    return sourceFile.getFullText();
+                                },
                                 nodeSourceCode: newCodeSnippet,
                                 jsDocOptions
                             };
@@ -262,7 +263,7 @@ export async function init(params: InitParams): Promise<void> {
 
                             return {
                                 fileSourceCode,
-                                nodeSourceCode: nodeSourceCode,
+                                nodeSourceCode,
                                 jsDocOptions
                             };
                         } finally {
