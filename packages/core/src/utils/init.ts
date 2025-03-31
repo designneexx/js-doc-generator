@@ -64,9 +64,9 @@ export async function init(params: InitParams): Promise<void> {
      * @property {JSDocOptions} jsDocOptions - Опции JSDoc комментариев.
      */
     const cache = new Cache({
-        basePath: path.resolve(cacheDir || DEFAULT_CACHE_DIR), // (optional) Path where cache files are stored (default).
-        ns: 'jsdocgen', // (optional) A grouping namespace for items.
-        hash: 'sha1', // (optional) A hashing algorithm used within the cache key.
+        basePath: path.resolve(cacheDir || DEFAULT_CACHE_DIR),
+        ns: 'jsdocgen',
+        hash: 'sha1',
         ...cacheOptions
     });
 
