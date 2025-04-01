@@ -70,6 +70,9 @@ export async function init(params: InitParams): Promise<void> {
         ...cacheOptions
     });
 
+    /**
+     * Следует ли запускать генерацию на каждый узел и файл параллельно
+     */
     const isParallel = !timeoutBetweenRequests;
 
     /**
