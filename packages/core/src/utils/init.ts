@@ -70,6 +70,8 @@ export async function init(params: InitParams): Promise<void> {
         ...cacheOptions
     });
 
+    const isParallel = !timeoutBetweenRequests;
+
     /**
      * Создает новый объект проекта TypeScript.
      */
@@ -153,48 +155,11 @@ export async function init(params: InitParams): Promise<void> {
                         return acc;
                     }
 
-                    scheduler.runTask(async () => {
-                        await sleep(0);
-
-                        await onProgress?.({
-                            sourceFile: sourceFileProgressData,
-                            codeSnippet: nodeSourceCode,
-                            codeSnippetIndex: index,
-                            sourceFileIndex: fileIndex,
-                            totalFiles: sourceFiles.length,
-                            codeSnippetsInFile: nodes.length,
-                            codeSnippetsInAllFiles: total,
-                            currentGeneralIndex,
-                            id
-                        });
-
-                        return {
-                            sourceFile,
-                            node,
-                            kind
-                        };
-                    });
-
-                    const startTime = performance.now();
-                    let endTime = startTime;
-
-                    const promise = setJSDocToNode({
-                        jsDocGeneratorService: wrappedJSDocGeneratorService,
-                        jsDocOptions,
-                        node,
-                        sourceFile,
-                        isSaveAfterEachIteration: isSaveAfterEachIteration || false
-                    });
-
-                    promise.then(() => {
-                        const currentTime = performance.now();
-
-                        endTime = currentTime - startTime;
-                    });
-
-                    const scheduled = scheduler.runTask(async () => {
+                    const run = async () => {
                         try {
-                            await sleep(waitTimeBetweenProgressNotifications || 0);
+                            if (isParallel) {
+                                await sleep(waitTimeBetweenProgressNotifications || 0);
+                            }
 
                             const { value, retries } = await promise;
                             const newCodeSnippet = node.getFullText();
@@ -273,11 +238,64 @@ export async function init(params: InitParams): Promise<void> {
                                 kind
                             };
                         } finally {
-                            await sleep(waitTimeBetweenProgressNotifications || 0);
+                            if (isParallel) {
+                                await sleep(waitTimeBetweenProgressNotifications || 0);
+                            }
                         }
+                    };
+
+                    if (!isParallel) {
+                        scheduler.runTask(async () => {
+                            await sleep(0);
+
+                            await onProgress?.({
+                                sourceFile: sourceFileProgressData,
+                                codeSnippet: nodeSourceCode,
+                                codeSnippetIndex: index,
+                                sourceFileIndex: fileIndex,
+                                totalFiles: sourceFiles.length,
+                                codeSnippetsInFile: nodes.length,
+                                codeSnippetsInAllFiles: total,
+                                currentGeneralIndex,
+                                id
+                            });
+
+                            return {
+                                sourceFile,
+                                node,
+                                kind
+                            };
+                        });
+                    }
+
+                    const startTime = performance.now();
+                    let endTime = startTime;
+
+                    const promise = setJSDocToNode({
+                        jsDocGeneratorService: wrappedJSDocGeneratorService,
+                        jsDocOptions,
+                        node,
+                        sourceFile,
+                        isSaveAfterEachIteration: isSaveAfterEachIteration || false
                     });
 
-                    acc.push(scheduled);
+                    promise.then(() => {
+                        const currentTime = performance.now();
+
+                        endTime = currentTime - startTime;
+                    });
+
+                    if (isParallel) {
+                        acc.push(
+                            Promise.resolve()
+                                .then(() => run())
+                                .then((value) => ({ success: true as const, value }))
+                                .catch((error) => ({ success: false, error }))
+                        );
+                    } else {
+                        const scheduled = scheduler.runTask(run);
+                        acc.push(scheduled);
+                    }
 
                     return acc;
                 },
