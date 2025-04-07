@@ -130,7 +130,7 @@ export async function init(params: InitParams): Promise<void> {
 
         return allowedJsDocNodeSetterList.flatMap((jsDocNodeSetter) => {
             const { kind, setJSDocToNode } = jsDocNodeSetter;
-            const nodes = sourceFile.getChildrenOfKind(SyntaxKind[kind]);
+            const nodes = sourceFile.getDescendantsOfKind(SyntaxKind[kind]);
 
             return nodes.reduce(
                 (acc, node, index) => {
