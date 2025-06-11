@@ -11,8 +11,7 @@
     "lerna:build": "lerna run build",
     "publish": "lerna publish --no-private",
     "auto:publish": "npm run lerna:build && lerna publish --no-private",
-    "generate:jsdoc": "auto-js-doc-gen generate",
-    "tess": "tsc && tsc-alias"
+    "generate:jsdoc": "auto-js-doc-gen generate"
   },
   "keywords": [
     "auto",
