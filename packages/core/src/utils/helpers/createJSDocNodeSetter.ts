@@ -85,6 +85,10 @@ export function createJSDocNodeSetter<Kind extends KindDeclarationNames>(
              */
             const minifiedSourceFile = getMinifySourceCode(clonedSourceFile);
 
+            if (node.getJsDocs().length > 0) {
+                return;
+            }
+
             /**
              * Ожидаемый код JSDoc, который будет сгенерирован на основе указанного фрагмента кода.
              * @typedef {Object} JSDocableCodeSnippet
