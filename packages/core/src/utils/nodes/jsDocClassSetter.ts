@@ -15,6 +15,10 @@ export const jsDocClassSetter: JSDocNodeSetter<KindDeclarationNames.ClassDeclara
          * @returns A code snippet that can be documented with JSDoc.
          */
         async getJSDocableCodeSnippet(params) {
+            /**
+             * Сервис для генерации JSDoc комментариев
+             * @type {Object}
+             */
             const { jsDocGeneratorService, jsDocGeneratorServiceOptions } = params;
 
             return jsDocGeneratorService.createJSDocClass(jsDocGeneratorServiceOptions);

@@ -58,8 +58,20 @@ export interface Scheduler<T> {
  * @returns {Scheduler} - Возвращает объект планировщика задач
  */
 export function createScheduler<T>(ms = 0, signal?: AbortSignal | null): Scheduler<T> {
+    /**
+     * Множество функций, возвращающих Promise<T>, представляющее собой очередь задач
+     * @type {Set<() => Promise<T>>}
+     */
     const queueSet = new Set<() => Promise<T>>();
+    /**
+     * Массив промисов, возвращающих результаты итерации по задачам.
+     * @type {Promise<IteratorResult<TaskResult<T>>>[]}
+     */
     const promises: Promise<IteratorResult<TaskResult<T>>>[] = [];
+    /**
+     * Флаг, указывающий была ли отменена операция
+     * @type {boolean}
+     */
     let isAborted = false;
 
     signal?.addEventListener('abort', () => {
@@ -77,6 +89,10 @@ export function createScheduler<T>(ms = 0, signal?: AbortSignal | null): Schedul
             }
 
             try {
+                /**
+                 * Результат выполнения асинхронной функции, возвращающейся из callback
+                 * @type {any}
+                 */
                 const value = await callback();
 
                 yield { success: true as const, value };
@@ -87,6 +103,10 @@ export function createScheduler<T>(ms = 0, signal?: AbortSignal | null): Schedul
             }
         }
     }
+    /**
+     * Генератор итератора.
+     * @returns {Iterator} Итератор.
+     */
     const iterator = generator();
 
     return {
@@ -97,8 +117,16 @@ export function createScheduler<T>(ms = 0, signal?: AbortSignal | null): Schedul
          */
         async runTask(callback: () => Promise<T>): Promise<TaskResult<T>> {
             queueSet.add(callback);
+            /**
+             * Promise returned by calling the `next` method on an iterator.
+             * @type {Promise<{ value: any, done: boolean }>}
+             */
             const promise = iterator.next();
             promises.push(promise);
+            /**
+             * Результат выполнения итератора, полученный после ожидания разрешения обещания.
+             * @type {any}
+             */
             const iteratorResult = await promise;
 
             if (!iteratorResult.done) {

@@ -10,6 +10,11 @@ import { v4 } from 'uuid';
 export function cloneNodeAsFileFactory(
     project?: Project
 ): <Value extends SourceFile | Node<ts.Node>>(value: Value) => SourceFile {
+    /**
+     * Текущий проект.
+     * Если передан существующий проект, используется он, иначе создается новый проект.
+     * @type {Project}
+     */
     const currentProject = project || new Project();
 
     return <Value extends SourceFile | Node<ts.Node>>(value: Value): SourceFile => {

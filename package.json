@@ -11,7 +11,8 @@
     "lerna:build": "lerna run build",
     "publish": "lerna publish --no-private",
     "auto:publish": "npm run lerna:build && lerna publish --no-private",
-    "generate:jsdoc": "auto-js-doc-gen generate"
+    "generate:jsdoc": "auto-js-doc-gen generate",
+    "tess": "tsc && tsc-alias"
   },
   "keywords": [
     "auto",
@@ -58,8 +59,9 @@
     "eslint-plugin-unused-imports": "^4.1.4",
     "lerna": "^8.1.9",
     "prettier": "^3.3.3",
+    "tsc": "^2.0.4",
     "tsc-alias": "^1.8.10",
-    "typescript": "^5.7.2",
+    "typescript": "^5.7.3",
     "typescript-eslint": "^8.18.2"
   }
 }

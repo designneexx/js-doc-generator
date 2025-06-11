@@ -39,6 +39,10 @@ export interface ConfigParams {
  * @returns {Command} - Объект Command для настройки CLI команд.
  */
 export function runByCli(): Command {
+    /**
+     * Represents a command instance.
+     * @constructor
+     */
     const command = new Command();
 
     command
@@ -90,9 +94,21 @@ export async function start(
     overrideConfig?: DeepPartial<InitParams>
 ): Promise<void> {
     try {
+        /**
+         * Деструктурированный объект configParams. 
+         * @type {object}
+         */
         const { url, ...params } = configParams || {};
+        /**
+         * Переменная config содержит результат загрузки конфигурации с параметрами или пустой объект, если загрузка завершилась ошибкой.
+         * @type {Partial<InitParams>}
+         */
         const config = await loadConfig({ ...params }).catch(() => ({}) as Partial<InitParams>);
 
+        /**
+         * Переменная, содержащая информацию о клиенте
+         * @type {any}
+         */
         let client;
 
         if (url?.trim()) {
@@ -119,6 +135,10 @@ export async function start(
             }
         } as InitParams);
     } catch (e) {
+        /**
+         * Переменная, содержащая объект ошибки
+         * @type {Error}
+         */
         const err = e as Error;
         console.log(
             'Не удалось прочитать файл конфигурации или запустить генерацию js doc. Подробнее об ошибке: ',

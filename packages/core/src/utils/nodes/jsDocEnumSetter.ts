@@ -15,6 +15,10 @@ export const jsDocEnumSetter: JSDocNodeSetter<KindDeclarationNames.EnumDeclarati
          * @returns The JSDoc snippet for EnumDeclaration nodes.
          */
         async getJSDocableCodeSnippet(params) {
+            /**
+             * Сервис для генерации JSDoc комментариев
+             * @type {JsDocGeneratorService}
+             */
             const { jsDocGeneratorService, jsDocGeneratorServiceOptions } = params;
 
             return jsDocGeneratorService.createJSDocEnum(jsDocGeneratorServiceOptions);

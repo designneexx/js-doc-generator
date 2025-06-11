@@ -26,10 +26,22 @@ interface SaveJSDocProcessedInCacheParams {
 export function saveJSDocProcessedInCache(
     params: SaveJSDocProcessedInCacheParams
 ): Promise<{ path: string }> {
+    /**
+     * Список исходных кодов узлов файла.
+     * @type {Array}
+     */
     const { fileNodeSourceCodeList, cache } = params;
+    /**
+     * Маппинг для управления кэшем файлов.
+     * @type {FileCacheManagerMap}
+     */
     const fileCacheManagerMap = new FileCacheManagerMap();
 
     fileNodeSourceCodeList.forEach((fileNodeSourceCode) => {
+        /**
+         * Кэшированные данные файла.
+         * @type {any}
+         */
         const data = fileCacheManagerMap.getCacheFromNodeSourceFile(fileNodeSourceCode);
         /**
          * Получает кэш из узла и файла исходного кода.
@@ -38,6 +50,10 @@ export function saveJSDocProcessedInCache(
          * @param {SourceFile} params.sourceFile - Файл исходного кода.
          * @param {Map<string, FileCacheManager>} params.fileCacheManagerMap - Карта менеджеров кэша файлов.
          * @returns {CacheData} - Данные кэша.
+         */
+        /**
+         * Функция для работы с данными, содержащими информацию о хэш-кодах и исходном коде
+         * @param {Data} data - Объект с данными
          */
         const { hashCodeSnippet, hashSourceCode, codeSnippetHashMap, jsDocOptions } = data;
 

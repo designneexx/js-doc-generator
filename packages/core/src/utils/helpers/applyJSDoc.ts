@@ -15,7 +15,25 @@ import { getJSDocStructure } from './getJSDocStructure';
 export async function applyJSDoc<CurrentNode extends ASTJSDocableNode = ASTJSDocableNode>(
     params: ApplyJSDocParams<CurrentNode>
 ): Promise<void> {
+    /**
+     * Переменная, содержащая различные параметры для обработки
+     * @typedef {Object} Params
+     * @property {Node} node - Узел AST (Abstract Syntax Tree), с которым будет производиться работа
+     * @property {JsDocableNode[]} jsDocableNodes - Массив узлов AST, поддерживающих JSDoc
+     * @property {JsDocOptions} jsDocOptions - Опции для обработки JSDoc
+     */
     const { node, jsDocableNodes, jsDocOptions } = params;
+    /**
+     * Опции для JSDoc комментариев
+     * @typedef {Object} JSDocOptions
+     * @property {boolean} [isShowJSDocDescription=true] - Флаг отображения описания JSDoc
+     * @property {boolean} [isShowJSDocTags=true] - Флаг отображения тегов JSDoc
+     * @property {string[]} [allowedJSDocTags=[]] - Разрешенные теги JSDoc
+     * @property {string[]} [disabledJSDocTags=[]] - Запрещенные теги JSDoc
+     * @property {InsertModeJSDocTypes} [mode=InsertModeJSDocTypes.AppendMode] - Режим вставки JSDoc
+     * @property {string} [prefixDescription=''] - Префикс для описания JSDoc
+     * @property {string} [postfixDescription=''] - Постфикс для описания JSDoc
+     */
     const {
         isShowJSDocDescription = true,
         isShowJSDocTags = true,
@@ -25,7 +43,15 @@ export async function applyJSDoc<CurrentNode extends ASTJSDocableNode = ASTJSDoc
         prefixDescription = '',
         postfixDescription = ''
     } = jsDocOptions;
+    /**
+     * Флаг, указывающий на то, что режим замены активен
+     * @type {boolean}
+     */
     const isReplaceMode = mode === 'ReplaceMode' || mode === InsertModeJSDocTypes.ReplaceMode;
+    /**
+     * Массив всех узлов, подлежащих документированию JSDoc.
+     * @type {Node[]}
+     */
     const allJSDocableNodes = [node, ...node.getDescendants().filter(Node.isJSDocable)];
 
     /**
@@ -39,6 +65,10 @@ export async function applyJSDoc<CurrentNode extends ASTJSDocableNode = ASTJSDoc
          * @param {JSDocStructure[]} acc - Аккумулятор структур JSDoc комментариев.
          * @param {JSDocStructure} jsDocStructure - Структура JSDoc комментария.
          * @returns {JSDocStructure[]} - Отформатированный массив структур JSDoc комментариев.
+         */
+        /**
+         * Имя тега JSDoc.
+         * @type {string}
          */
         const { tagName } = jsDocTagStructure;
 
@@ -60,9 +90,22 @@ export async function applyJSDoc<CurrentNode extends ASTJSDocableNode = ASTJSDoc
      * @param {DeepNode} deepNode - Узел AST.
      */
     function formatJSDocStructure(acc: JSDocStructure[], jsDocStructure: JSDocStructure) {
+        /**
+         * Структура данных, скопированная из jsDocStructure
+         * @type {object}
+         */
         const data = { ...jsDocStructure };
+        /**
+         * Массив тегов.
+         * @type {Array<string>}
+         */
         const { tags = [] } = data;
 
+        /**
+         * Фильтрует теги JSDoc с помощью заданной функции.
+         * @param {JSDocTag} tag - Тег JSDoc для фильтрации.
+         * @returns {boolean} - Результат фильтрации тега.
+         */
         data.tags = tags.filter(filterJSDocTags);
 
         if (!isShowJSDocDescription) {
@@ -94,8 +137,20 @@ export async function applyJSDoc<CurrentNode extends ASTJSDocableNode = ASTJSDoc
         jsDocsStructure: JSDocStructure[],
         deepNode: DeepNode
     ) {
+        /**
+         * Массив JSDoc комментариев узла.
+         * @type {Array<Object>}
+         */
         const nodeJSDocs = deepNode.getJsDocs();
+        /**
+         * Массив отфильтрованных JSDoc комментариев.
+         * @type {Array}
+         */
         const filteredJSDocs = jsDocsStructure.filter((_, index) => !nodeJSDocs[index]);
+        /**
+         * Переменная, указывающая на наличие описания в отфильтрованных JSDoc комментариях
+         * @type {boolean}
+         */
         const isHaveDescription = filteredJSDocs.length > 0;
 
         if (isReplaceMode && filteredJSDocs.length > 0) {
@@ -118,12 +173,32 @@ export async function applyJSDoc<CurrentNode extends ASTJSDocableNode = ASTJSDoc
     }
 
     allJSDocableNodes.forEach((deepNode, index) => {
+        /**
+         * Узел, поддерживающий JSDoc
+         * @type {JsDocableNode}
+         */
         const jsDocableNode = jsDocableNodes.at(index);
 
         if (!jsDocableNode) return;
 
+        /**
+         * Переменная, содержащая массив JSDoc комментариев для узла, поддерживающего JSDoc
+         * @type {Array<Object>}
+         */
         const jsDocsNode = jsDocableNode?.getJsDocs() || [];
+        /**
+         * Структура JSDoc
+         * @typedef {Object} JSDocStructure
+         * @property {string} description - Описание JSDoc
+         * @property {string[]} tags - Теги JSDoc
+         */
         const jsDocStructure = jsDocsNode.map(getJSDocStructure);
+        /**
+         * Структура JSDoc
+         * @typedef {Object} JSDocStructure
+         * @property {string} name - Название JSDoc
+         * @property {string} description - Описание JSDoc
+         */
         const filteredJSDocStructure = jsDocStructure.reduce(formatJSDocStructure, []);
 
         appendJSDocsWithMode(filteredJSDocStructure, deepNode);

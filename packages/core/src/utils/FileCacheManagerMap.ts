@@ -78,9 +78,27 @@ export class FileCacheManagerMap extends Map<string, Map<string, FileCacheHashMe
          * @returns {GetCacheFromNodeSourceFileReturn} Объект с данными кэша из исходного кода файла
          */
         const hashDigestCodeSnippet = sha1(nodeSourceCode);
+        /**
+         * Хеширует исходный код файла с использованием алгоритма SHA-1.
+         * @param {string} fileSourceCode - Исходный код файла для хеширования.
+         * @returns {string} - Хеш исходного кода файла.
+         */
         const hashDigestSourceCode = sha1(fileSourceCode);
+        /**
+         * Строковое представление хэш-суммы кодового сниппета
+         * @type {string}
+         */
         const hashCodeSnippet = hashDigestCodeSnippet.toString();
+        /**
+         * Строковое представление хэша исходного кода.
+         * @type {string}
+         */
         const hashSourceCode = hashDigestSourceCode.toString();
+        /**
+         * Хэш-карта для хранения фрагментов кода.
+         * Ключ - хэш исходного кода, значение - соответствующая карта кодовых фрагментов.
+         * @type {Map<string, Map<string, any>>}
+         */
         const codeSnippetHashMap = this.get(hashSourceCode) || new Map();
 
         return { hashCodeSnippet, hashSourceCode, codeSnippetHashMap, jsDocOptions };
@@ -104,6 +122,10 @@ export class FileCacheManagerMap extends Map<string, Map<string, FileCacheHashMe
          * @returns {boolean} Результат проверки наличия узла в кэше
          */
         const data = this.getCacheFromNodeSourceFile(fileNodeSourceCode);
+        /**
+         * Хэш-карта для хранения фрагментов кода.
+         * @type {Object.<string, string>}
+         */
         const { codeSnippetHashMap, hashCodeSnippet } = data;
         // const fileCacheHashMetadata = codeSnippetHashMap.get(hashCodeSnippet);
 

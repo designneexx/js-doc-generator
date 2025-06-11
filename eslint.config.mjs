@@ -6,20 +6,17 @@ const __dirname = import.meta.dirname;
 
 const compat = new FlatCompat({
     baseDirectory: __dirname, // optional; default: process.cwd()
-    recommendedConfig: js.configs.recommended, // optional unless using "eslint:recommended"
+    recommendedConfig: js.configs.recommended // optional unless using "eslint:recommended"
 });
 
 const config = tseslint.config(
     {
-        ignores: ["node_modules", "packages/*/node_modules", "packages/*/dist"]
+        ignores: ['node_modules', 'packages/*/node_modules', 'packages/*/dist']
     },
     js.configs.recommended,
     ...tseslint.configs.recommended,
     ...compat.config({
-        extends: [
-            'plugin:import/recommended',
-            'plugin:prettier/recommended'
-        ],
+        extends: ['plugin:import/recommended', 'plugin:prettier/recommended'],
         plugins: ['unused-imports', 'prettier'],
         rules: {
             'class-methods-use-this': 'error',

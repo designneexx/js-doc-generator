@@ -1,8 +1,6 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 //@ts-ignore
 import { type FileSystemCache } from 'file-system-cache';
-import { RetriedResponse } from 'src/utils/helpers/retryAsyncRequest';
-import { JSDocGeneratorServiceWithRetries } from 'src/utils/helpers/scheduleJSDocGeneratorService';
 import { JSDocableNode, SyntaxKind, Node, ts, SourceFile, type ProjectOptions } from 'ts-morph';
 
 /**
@@ -193,7 +191,7 @@ export interface GetJSDocableCodeSnippetParams {
     /**
      * Сервис для генерации JSDoc с возможностью повторных попыток.
      */
-    jsDocGeneratorService: JSDocGeneratorServiceWithRetries;
+    jsDocGeneratorService: JSDocGeneratorService;
     /**
      * Конфигурационные опции для настройки сервиса генерации JSDoc.
      *
@@ -216,9 +214,7 @@ export interface CreateJSDocNodeSetterParams<Kind extends KindDeclarationNames> 
      * @param params - Параметры для получения фрагмента кода.
      * @returns Фрагмент кода, к которому можно применить JSDoc.
      */
-    getJSDocableCodeSnippet(
-        params: GetJSDocableCodeSnippetParams
-    ): Promise<RetriedResponse<string>>;
+    getJSDocableCodeSnippet(params: GetJSDocableCodeSnippetParams): Promise<string>;
 }
 
 /**
@@ -237,7 +233,7 @@ export interface SetJSDocToNodeParams<CurrentNode extends ASTJSDocableNode = AST
     /**
      * Сервис генерации JSDoc с возможностью повторных попыток.
      */
-    jsDocGeneratorService: JSDocGeneratorServiceWithRetries;
+    jsDocGeneratorService: JSDocGeneratorService;
     /**
      * Частичные опции JSDoc для настройки генерации JSDoc.
      *
@@ -559,60 +555,14 @@ export interface InitParams {
     detailGenerationOptions?: DetailGenerationOptions | null;
 
     /**
-     * Функция обратного вызова для отслеживания прогресса генерации.
-     *
-     * @param {ProgressParams} params Параметры прогресса.
-     */
-    onProgress?: ((params: BaseProgressParams) => void | Promise<void>) | null;
-
-    /**
-     * Функция обратного вызова при успешном завершении генерации.
-     *
-     * @param {OnSuccessParams} params Параметры успешного завершения.
-     */
-    onSuccess?: ((params: OnSuccessParams) => void | Promise<void>) | null;
-
-    /**
-     * Функция обратного вызова при возникновении ошибки в процессе генерации.
-     *
-     * @param {OnErrorParams} params Параметры ошибки.
-     */
-    onError?: ((params: OnErrorParams) => void | Promise<void>) | null;
-
-    /**
-     * Время ожидания между запросами.
-     */
-    timeoutBetweenRequests?: number | null;
-
-    /**
-     * Время ожидания между уведомлениями о прогрессе.
-     */
-    waitTimeBetweenProgressNotifications?: number | null;
-
-    /**
-     * Флаг указывающий, нужно ли сохранять результат после каждой итерации.
-     */
-    isSaveAfterEachIteration?: boolean | null;
-
-    /**
      * Флаг указывающий, отключено ли кэширование.
      */
     disabledCached?: boolean | null;
 
     /**
-     * Сигнал для прерывания операции.
-     */
-    signal?: AbortSignal | null;
-
-    /**
      * Количество попыток повторения операции в случае неудачи.
      */
     retries?: number | null;
-
-    /**
-     * Логгер для записи логов.
-     */
-    logger?: Logger | null;
 }
 
 /**
@@ -680,7 +630,7 @@ export interface JSDocNodeSetter<Kind extends KindDeclarationNames = KindDeclara
      */
     setJSDocToNode<CurrentNode extends ASTJSDocableNode>(
         params: SetJSDocToNodeParams<CurrentNode>
-    ): Promise<RetriedResponse<string>>;
+    ): Promise<void>;
 }
 
 /**
